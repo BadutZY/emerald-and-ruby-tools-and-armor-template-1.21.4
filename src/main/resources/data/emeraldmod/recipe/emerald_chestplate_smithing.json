@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smithing_transform",
+  "base": "minecraft:netherite_chestplate",
+  "addition": "minecraft:emerald",
+  "template": "emeraldmod:emerald_upgrade_smithing_template",
+  "result": {
+    "id": "emeraldmod:emerald_chestplate",
+    "count": 1
+  }
+}

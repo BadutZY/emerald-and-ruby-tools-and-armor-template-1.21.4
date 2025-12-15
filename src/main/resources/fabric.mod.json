@@ -1,0 +1,36 @@
+{
+	"schemaVersion": 1,
+	"id": "emeraldmod",
+	"version": "1.0.0",
+	"name": "Emerald Tools and Armors",
+	"description": "Make Emerald usable as Tools and Armor",
+	"authors": [
+		"BadutZY"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/user/BadutZY"
+	},
+	"license": "MIT",
+	"icon": "assets/emeraldmod/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.example.emeraldmod.EmeraldMod"
+		],
+		"client": [
+			"com.example.emeraldmod.EmeraldModClient"
+		]
+	},
+	"mixins": [
+		"emeraldmod.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "*",
+		"minecraft": "~1.21.4",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

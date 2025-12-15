@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "com.example.emeraldmod.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"PowderSnowBlockMixin",
+		"FallingBlockMixin",
+		"FallingBlockEntityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

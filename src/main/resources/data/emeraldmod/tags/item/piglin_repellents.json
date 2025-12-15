@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "emeraldmod:emerald_helmet",
+    "emeraldmod:emerald_chestplate",
+    "emeraldmod:emerald_leggings",
+    "emeraldmod:emerald_boots"
+  ]
+}

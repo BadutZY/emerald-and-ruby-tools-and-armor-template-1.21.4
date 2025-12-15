@@ -1,0 +1,64 @@
+{
+  "itemgroup.emeraldmod.emerald": "Emerald Tools & Armor",
+  "itemgroup.emeraldmod.netherite": "Netherite Tools & Armor",
+
+  "item.emeraldmod.emerald_sword": "Emerald Sword",
+  "item.emeraldmod.emerald_sword.tooltip": "§6Special Effect: Shockwave Strike",
+  "item.emeraldmod.emerald_sword.tooltip.shift": "§7Every 3rd hit creates a§r\n§7powerful shockwave§r\n§7• Bonus Damage: §c+8.0§r\n§7  to direct target§r\n§7• AoE Damage: §c6.0§r\n§7  in 5 block radius§r\n§7• Launches enemies§r\n§7  into the air§r\n§7• Enhanced knockback§r\n§7  on all hits",
+
+  "item.emeraldmod.emerald_pickaxe": "Emerald Pickaxe",
+  "item.emeraldmod.emerald_pickaxe.tooltip": "§6Special Effect: Auto-Smelt Ores",
+  "item.emeraldmod.emerald_pickaxe.tooltip.shift": "§7Automatically smelts§r\n§7mined ores§r\n§7• Works with Fortune§r\n§7• Smelts: Iron, Gold,§r\n§7  Copper ores§r\n§7• Ancient Debris →§r\n§7  Netherite Scrap§r\n§7• Grants smelting XP§r\n§7• Disabled with§r\n§7  Silk Touch",
+
+  "item.emeraldmod.emerald_axe": "Emerald Axe",
+  "item.emeraldmod.emerald_axe.tooltip": "§6Special Effect: Tree Chopper",
+  "item.emeraldmod.emerald_axe.tooltip.shift": "§7Chops entire trees§r\n§7at once§r\n§7• Works on all§r\n§7  wood types§r\n§7• Max: 500 logs§r\n§7  per chop§r\n§7• Only affects§r\n§7  natural trees§r\n§7• Searches up to§r\n§7  80 blocks high§r\n§7• Efficient durability",
+
+  "item.emeraldmod.emerald_shovel": "Emerald Shovel",
+  "item.emeraldmod.emerald_shovel.tooltip": "§6Special Effect: §7None yet",
+  "item.emeraldmod.emerald_shovel.tooltip.shift": "§7A powerful emerald§r\n§7shovel§r\n§7• High durability§r\n§7• Fast digging speed§r\n§7• Fire resistant",
+
+  "item.emeraldmod.emerald_hoe": "Emerald Hoe",
+  "item.emeraldmod.emerald_hoe.tooltip": "§6Special Effect: Auto-Replant",
+  "item.emeraldmod.emerald_hoe.tooltip.shift": "§7Right-click mature crops§r\n§7to harvest & replant§r\n§7• Works on: Wheat,§r\n§7  Carrots, Potatoes§r\n§7• Beetroots, Nether§r\n§7  Wart, Cocoa§r\n§7• Sweet Berries,§r\n§7  Melons, Pumpkins§r\n§7• Instant replanting§r\n§7• Grants harvest XP",
+
+  "item.emeraldmod.emerald_helmet": "Emerald Helmet",
+  "item.emeraldmod.emerald_helmet.tooltip": "§6Special Effect: Water Breathing",
+  "item.emeraldmod.emerald_helmet.tooltip.shift": "§7Grants permanent§r\n§7water breathing§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• High armor§r\n§7  protection§r\n§7• Fire resistant item",
+
+  "item.emeraldmod.emerald_chestplate": "Emerald Chestplate",
+  "item.emeraldmod.emerald_chestplate.tooltip": "§6Special Effect: Dolphin's Grace",
+  "item.emeraldmod.emerald_chestplate.tooltip.shift": "§7Grants permanent§r\n§7swimming speed§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• High armor§r\n§7  protection§r\n§7• Fire resistant item",
+
+  "item.emeraldmod.emerald_leggings": "Emerald Leggings",
+  "item.emeraldmod.emerald_leggings.tooltip": "§6Special Effect: §7None",
+  "item.emeraldmod.emerald_leggings.tooltip.shift": "§7Powerful emerald§r\n§7leg armor§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• High armor§r\n§7  protection§r\n§7• Fire resistant item",
+
+  "item.emeraldmod.emerald_boots": "Emerald Boots",
+  "item.emeraldmod.emerald_boots.tooltip": "§6Special Effect: Powder Snow Walk",
+  "item.emeraldmod.emerald_boots.tooltip.shift": "§7Walk on powder snow§r\n§7without sinking§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• High armor§r\n§7  protection§r\n§7• Fire resistant item",
+
+  "item.emeraldmod.emerald_horse_armor": "Emerald Horse Armor",
+  "item.emeraldmod.emerald_horse_armor.tooltip": "§6Premium horse protection",
+  "item.emeraldmod.emerald_horse_armor.tooltip.shift": "§7High defense for§r\n§7your horse§r\n§7• Fire resistant§r\n§7• Emerald-tier§r\n§7  protection",
+
+  "item.emeraldmod.emerald_upgrade_smithing_template": "§eEmerald Upgrade",
+  "item.emeraldmod.emerald_upgrade_smithing_template.description": "§eEmerald Upgrade",
+  "item.emeraldmod.emerald_upgrade_smithing_template.tooltip": "§6Emerald Upgrade\n§9Ingredients",
+  "item.emeraldmod.emerald_upgrade_smithing_template.tooltip.shift": "§7Use in Smithing Table§r\n§7to upgrade diamond gear§r\n§7to emerald tier§r\n§7• Applies to:§r\n§7  §aTools & Armor§r\n§7• Grants special§r\n§7  abilities§r\n§7• Increases durability§r\n§7  & stats",
+
+  "item.emeraldmod.netherite_horse_armor": "Netherite Horse Armor",
+  "item.emeraldmod.netherite_horse_armor.tooltip": "§6Emerald Upgrade\n§9Ingredients",
+
+  "upgrade.emeraldmod.emerald_upgrade.applies_to": "Diamond Equipment",
+  "upgrade.emeraldmod.emerald_upgrade.ingredients": "Emerald",
+  "upgrade.emeraldmod.emerald_upgrade.base_slot_description": "Add diamond armor, weapon, or tool",
+  "upgrade.emeraldmod.emerald_upgrade.additions_slot_description": "Add Emerald",
+
+  "effect.emeraldmod.snow_powder_walker": "Snow Walk",
+  "effect.emeraldmod.shockwave": "Shockwave",
+  "effect.emeraldmod.auto_smelt": "Auto Smelt",
+  "effect.emeraldmod.tree_chopping": "Tree Chopping",
+  "effect.emeraldmod.anti_gravity": "Anti-Gravity",
+  "effect.emeraldmod.auto_replant": "Auto Replant"
+}

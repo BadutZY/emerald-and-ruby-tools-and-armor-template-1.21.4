@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GEG",
+    "DLD",
+    "DDD"
+  ],
+  "key": {
+    "G": "minecraft:netherite_ingot",
+    "D": "minecraft:diamond",
+    "L": "minecraft:emerald",
+    "E": "emeraldmod:emerald_upgrade_smithing_template"
+  },
+  "result": {
+    "id": "emeraldmod:emerald_upgrade_smithing_template",
+    "count": 2
+  }
+}
