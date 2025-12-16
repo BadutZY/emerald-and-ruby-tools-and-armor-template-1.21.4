@@ -1,7 +1,7 @@
 package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.effect.ModEffects;
-import com.example.emeraldmod.item.EmeraldArmorItem;
+import com.example.emeraldmod.item.ModItems;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -23,7 +23,7 @@ public class ArmorEffectsHandler {
     private static void applyArmorEffects(PlayerEntity player) {
         // Cek helmet
         ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
-        if (helmet.getItem() instanceof EmeraldArmorItem) {
+        if (helmet.getItem() == ModItems.EMERALD_HELMET) {
             // Water Breathing dengan durasi infinite
             if (!hasInfiniteEffect(player, StatusEffects.WATER_BREATHING)) {
                 player.addStatusEffect(new StatusEffectInstance(
@@ -44,7 +44,7 @@ public class ArmorEffectsHandler {
 
         // Cek chestplate
         ItemStack chestplate = player.getEquippedStack(EquipmentSlot.CHEST);
-        if (chestplate.getItem() instanceof EmeraldArmorItem) {
+        if (chestplate.getItem() == ModItems.EMERALD_CHESTPLATE) {
             if (!hasInfiniteEffect(player, StatusEffects.DOLPHINS_GRACE)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.DOLPHINS_GRACE,
@@ -64,7 +64,7 @@ public class ArmorEffectsHandler {
 
         // Cek boots - Snow Powder Walker Effect
         ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
-        if (boots.getItem() instanceof EmeraldArmorItem) {
+        if (boots.getItem() == ModItems.EMERALD_BOOTS) {
             if (!hasInfiniteEffect(player, ModEffects.SNOW_POWDER_WALKER_ENTRY)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         ModEffects.SNOW_POWDER_WALKER_ENTRY,
@@ -83,7 +83,6 @@ public class ArmorEffectsHandler {
         }
 
         // Fire Resistance untuk semua armor emerald - INFINITE DURATION
-        // FIX: Cek apakah sudah ada infinite effect sebelum menambahkan
         if (hasAnyEmeraldArmor(player)) {
             if (!hasInfiniteEffect(player, StatusEffects.FIRE_RESISTANCE)) {
                 player.addStatusEffect(new StatusEffectInstance(
@@ -110,7 +109,10 @@ public class ArmorEffectsHandler {
 
     private static boolean hasAnyEmeraldArmor(PlayerEntity player) {
         for (ItemStack armorStack : player.getArmorItems()) {
-            if (armorStack.getItem() instanceof EmeraldArmorItem) {
+            if (armorStack.getItem() == ModItems.EMERALD_HELMET ||
+                    armorStack.getItem() == ModItems.EMERALD_CHESTPLATE ||
+                    armorStack.getItem() == ModItems.EMERALD_LEGGINGS ||
+                    armorStack.getItem() == ModItems.EMERALD_BOOTS) {
                 return true;
             }
         }

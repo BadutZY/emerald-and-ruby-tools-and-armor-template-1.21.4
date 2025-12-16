@@ -85,7 +85,7 @@ public class ModItemGroups {
         ModArmorMaterial.initialize();
         NetheriteArmorMaterial.initialize();
 
-        EmeraldMod.LOGGER.info("✓ Registered Emerald Tools & Armor Group");
-        EmeraldMod.LOGGER.info("✓ Registered Netherite Tools & Armor Group");
+        EmeraldMod.LOGGER.info("âœ“ Registered Emerald Tools & Armor Group");
+        EmeraldMod.LOGGER.info("âœ“ Registered Netherite Tools & Armor Group");
     }
 }

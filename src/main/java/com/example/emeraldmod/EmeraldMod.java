@@ -31,14 +31,18 @@ public class EmeraldMod implements ModInitializer {
         // Register custom effects FIRST (sebelum handler)
         ModEffects.registerModEffects();
 
+        // PENTING: Register items SEBELUM item groups
+        // Ini akan initialize materials dan register semua items
         ModItems.registerModItems();
+
+        // Register item groups SETELAH items
         ModItemGroups.registerItemGroups();
 
         // Register armor effects handler
         ArmorEffectsHandler.register();
         LOGGER.info("✓ Registered Emerald Armor Effects Handler");
 
-        // Register horse armor effects handler - NEW!
+        // Register horse armor effects handler
         HorseArmorEffectsHandler.register();
         LOGGER.info("✓ Registered Emerald Horse Armor Effects Handler");
 
@@ -84,6 +88,7 @@ public class EmeraldMod implements ModInitializer {
         LOGGER.info("  - Fire Immunity (All Armor)");
         LOGGER.info("  - Snow Powder Walker (Boots) - CUSTOM ICON");
         LOGGER.info("  - Piglin Neutral (All Armor) - MEMORY CONTROLLED");
+        LOGGER.info("  - ENCHANTABILITY: 20 (Same as Diamond)");
         LOGGER.info("");
         LOGGER.info("All Tool Features Active:");
         LOGGER.info("  - Shockwave Strike (Sword) - EVERY 3RD HIT + ICON");

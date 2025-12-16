@@ -14,7 +14,6 @@ public class EffectSpriteLoader {
 
         // Test semua texture paths
         testEffectTexture("snow_powder_walker", "Boots Armor Effect");
-        testEffectTexture("custom_fire_resistance", "Custom Fire Resistance (Hidden Icon)");
         testEffectTexture("shockwave", "Sword Tool Effect");
         testEffectTexture("auto_smelt", "Pickaxe Tool Effect");
         testEffectTexture("tree_chopping", "Axe Tool Effect");

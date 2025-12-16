@@ -4,45 +4,24 @@ import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.ModItems;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.*;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 
 public class AutoReplantHandler {
 
-    // Map crop block ke seed item yang diperlukan untuk replant
-    private static final Map<Block, ItemStack> CROP_TO_SEED = new HashMap<>();
-
-    static {
-        // Basic Crops
-        CROP_TO_SEED.put(Blocks.WHEAT, new ItemStack(Items.WHEAT_SEEDS));
-        CROP_TO_SEED.put(Blocks.CARROTS, new ItemStack(Items.CARROT));
-        CROP_TO_SEED.put(Blocks.POTATOES, new ItemStack(Items.POTATO));
-        CROP_TO_SEED.put(Blocks.BEETROOTS, new ItemStack(Items.BEETROOT_SEEDS));
-
-        // Nether Wart
-        CROP_TO_SEED.put(Blocks.NETHER_WART, new ItemStack(Items.NETHER_WART));
-
-        // Melon & Pumpkin Stems (tidak perlu replant, hanya harvest)
-        // Akan dihandle secara khusus
-
-        // Sweet Berry Bush (tidak perlu replant, hanya harvest)
-        // Akan dihandle secara khusus
-    }
+    private static final Random RANDOM = new Random();
 
     public static void register() {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
@@ -54,7 +33,7 @@ public class AutoReplantHandler {
 
             // Cek apakah di server side
             if (world.isClient) {
-                return ActionResult.SUCCESS; // Client side sukses, server akan handle
+                return ActionResult.SUCCESS;
             }
 
             BlockPos pos = hitResult.getBlockPos();
@@ -69,7 +48,7 @@ public class AutoReplantHandler {
             return ActionResult.PASS;
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Auto-Replant Handler for Emerald Hoe");
+        EmeraldMod.LOGGER.info("✓ Registered Auto-Replant Handler with Fortune Support");
     }
 
     private static boolean handleCropBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, Block block, ItemStack hoe) {
@@ -88,11 +67,6 @@ public class AutoReplantHandler {
         // Handle StemBlock (Melon & Pumpkin Stems)
         if (block instanceof StemBlock stemBlock) {
             return handleStemBlock(serverWorld, player, pos, state, stemBlock, hoe);
-        }
-
-        // Handle AttachedStemBlock (Connected Melon/Pumpkin Stems)
-        if (block instanceof AttachedStemBlock) {
-            return handleAttachedStem(serverWorld, player, pos, state, hoe);
         }
 
         // Handle Melon & Pumpkin Fruits
@@ -116,82 +90,100 @@ public class AutoReplantHandler {
     private static boolean handleStandardCrop(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, CropBlock crop, ItemStack hoe) {
         // Cek apakah crop sudah dewasa
         if (!crop.isMature(state)) {
-            return false; // Crop belum dewasa, tidak diproses
+            return false;
         }
 
-        // Dapatkan loot drops
+        // Get Fortune level
+        int fortuneLevel = EnchantmentHelper.getLevel(
+                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
+                        .getOrThrow(Enchantments.FORTUNE),
+                hoe
+        );
+
+        // Get base drops
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Drop semua items
+        // Apply ADDITIONAL Fortune bonus
+        if (fortuneLevel > 0) {
+            applyFortuneBonus(drops, fortuneLevel);
+        }
+
+        // Drop all items
         for (ItemStack drop : drops) {
             Block.dropStack(world, pos, drop);
         }
 
-        // Replant crop (reset ke age 0)
+        // Replant crop (reset to age 0)
         BlockState newState = crop.getDefaultState();
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
         // Play sound
         world.playSound(null, pos, SoundEvents.BLOCK_CROP_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
 
-        // Damage hoe
+        // Damage hoe (respects Unbreaking enchantment automatically)
         hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
 
-        // Add experience (seperti harvest normal)
-        player.addExperience(1);
+        // Add experience
+        player.addExperience(fortuneLevel > 0 ? 2 : 1);
 
-        EmeraldMod.LOGGER.debug("Auto-replanted crop at {}", pos);
+        EmeraldMod.LOGGER.debug("Auto-replanted crop at {} (Fortune: {}, Total items: {})",
+                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
     private static boolean handleNetherWart(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
-        // Cek apakah nether wart sudah dewasa (age 3)
         int age = state.get(NetherWartBlock.AGE);
         if (age < 3) {
-            return false; // Belum dewasa
+            return false;
         }
 
-        // Dapatkan loot drops
+        // Fortune works on Nether Wart
+        int fortuneLevel = EnchantmentHelper.getLevel(
+                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
+                        .getOrThrow(Enchantments.FORTUNE),
+                hoe
+        );
+
+        // Get drops with Fortune applied
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Drop semua items
+        // Apply ADDITIONAL Fortune bonus
+        if (fortuneLevel > 0) {
+            applyFortuneBonus(drops, fortuneLevel);
+        }
+
         for (ItemStack drop : drops) {
             Block.dropStack(world, pos, drop);
         }
 
-        // Replant nether wart (reset ke age 0)
+        // Replant
         BlockState newState = Blocks.NETHER_WART.getDefaultState();
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
-        // Play sound
         world.playSound(null, pos, SoundEvents.BLOCK_NETHER_WART_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
-
-        // Damage hoe
         hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
 
-        EmeraldMod.LOGGER.debug("Auto-replanted nether wart at {}", pos);
+        EmeraldMod.LOGGER.debug("Auto-replanted nether wart at {} (Fortune: {}, Total items: {})",
+                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
     private static boolean handleStemBlock(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, StemBlock stem, ItemStack hoe) {
-        // Stem block hanya harvest jika sudah dewasa dan belum attached
         int age = state.get(StemBlock.AGE);
         if (age < 7) {
-            return false; // Belum dewasa
+            return false;
         }
 
-        // Cek apakah ada gourd (melon/pumpkin) di sekitar
+        // Check for gourd
         boolean hasGourd = false;
         Block expectedGourd = null;
 
-        // Tentukan gourd yang diharapkan berdasarkan jenis stem
         if (stem == Blocks.MELON_STEM) {
             expectedGourd = Blocks.MELON;
         } else if (stem == Blocks.PUMPKIN_STEM) {
             expectedGourd = Blocks.PUMPKIN;
         }
 
-        // Cek di 4 arah horizontal
         if (expectedGourd != null) {
             for (var direction : net.minecraft.util.math.Direction.Type.HORIZONTAL) {
                 BlockPos adjacentPos = pos.offset(direction);
@@ -203,126 +195,164 @@ public class AutoReplantHandler {
             }
         }
 
-        // Jika ada gourd, tidak perlu harvest stem (biarkan attached)
         if (hasGourd) {
             return false;
         }
 
-        // Stem sudah dewasa tapi tidak ada gourd
-        // Reset ke age 0 untuk grow lagi
+        // Reset stem
         BlockState newState = stem.getDefaultState();
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
-        // Play sound
         world.playSound(null, pos, SoundEvents.BLOCK_STEM_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
-
-        // Damage hoe (minimal karena hanya reset stem)
         hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
 
-        EmeraldMod.LOGGER.debug("Reset stem at {}", pos);
         return true;
     }
 
-    private static boolean handleAttachedStem(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
-        // Attached stem tidak perlu diproses karena gourd-nya yang di-harvest
-        // Return false agar tidak ada action
-        return false;
-    }
-
     private static boolean handleGourdBlock(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, Block block, ItemStack hoe) {
-        // Harvest melon atau pumpkin
+        // Get Fortune level
+        int fortuneLevel = EnchantmentHelper.getLevel(
+                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
+                        .getOrThrow(Enchantments.FORTUNE),
+                hoe
+        );
+
+        // Get drops
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Drop semua items
+        // Apply ADDITIONAL Fortune bonus for melons (pumpkins don't benefit from fortune in vanilla)
+        if (fortuneLevel > 0 && block == Blocks.MELON) {
+            applyFortuneBonus(drops, fortuneLevel);
+        }
+
         for (ItemStack drop : drops) {
             Block.dropStack(world, pos, drop);
         }
 
-        // Hapus gourd block
         world.removeBlock(pos, false);
 
-        // Play sound
         if (block == Blocks.MELON) {
             world.playSound(null, pos, SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
         } else {
             world.playSound(null, pos, SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
         }
 
-        // Damage hoe
         hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
-
-        // Add experience
         player.addExperience(1);
 
-        EmeraldMod.LOGGER.debug("Harvested gourd at {}", pos);
         return true;
     }
 
     private static boolean handleSweetBerryBush(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
-        // Sweet berry bush memiliki 4 age (0-3)
-        // Hanya harvest jika age 2 atau 3 (ada berries)
         int age = state.get(SweetBerryBushBlock.AGE);
         if (age < 2) {
-            return false; // Belum ada berries
+            return false;
         }
 
-        // Dapatkan loot drops
+        // Fortune affects sweet berries
+        int fortuneLevel = EnchantmentHelper.getLevel(
+                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
+                        .getOrThrow(Enchantments.FORTUNE),
+                hoe
+        );
+
+        // Get drops
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Drop semua items
+        // Apply ADDITIONAL Fortune bonus
+        if (fortuneLevel > 0) {
+            applyFortuneBonus(drops, fortuneLevel);
+        }
+
         for (ItemStack drop : drops) {
             Block.dropStack(world, pos, drop);
         }
 
-        // Reset ke age 1 (bush tetap ada, tapi berries hilang)
+        // Reset to age 1
         BlockState newState = state.with(SweetBerryBushBlock.AGE, 1);
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
-        // Play sound
         world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES, SoundCategory.BLOCKS, 1.0f, 1.0f);
-
-        // Damage hoe
         hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
-
-        // Add experience
         player.addExperience(1);
 
-        EmeraldMod.LOGGER.debug("Harvested sweet berries at {}", pos);
+        EmeraldMod.LOGGER.debug("Harvested sweet berries at {} (Fortune: {}, Total items: {})",
+                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
     private static boolean handleCocoa(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
-        // Cocoa memiliki 3 age (0-2)
         int age = state.get(CocoaBlock.AGE);
         if (age < 2) {
-            return false; // Belum dewasa
+            return false;
         }
 
-        // Dapatkan loot drops
+        // Fortune affects cocoa beans
+        int fortuneLevel = EnchantmentHelper.getLevel(
+                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
+                        .getOrThrow(Enchantments.FORTUNE),
+                hoe
+        );
+
+        // Get drops
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Drop semua items
+        // Apply ADDITIONAL Fortune bonus
+        if (fortuneLevel > 0) {
+            applyFortuneBonus(drops, fortuneLevel);
+        }
+
         for (ItemStack drop : drops) {
             Block.dropStack(world, pos, drop);
         }
 
-        // Replant cocoa (reset ke age 0, tetap di posisi yang sama)
+        // Replant
         BlockState newState = Blocks.COCOA.getDefaultState()
                 .with(CocoaBlock.AGE, 0)
-                .with(CocoaBlock.FACING, state.get(CocoaBlock.FACING)); // Pertahankan facing
+                .with(CocoaBlock.FACING, state.get(CocoaBlock.FACING));
 
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
-        // Play sound
         world.playSound(null, pos, SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 1.5f);
-
-        // Damage hoe
         hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
-
-        // Add experience
         player.addExperience(1);
 
-        EmeraldMod.LOGGER.debug("Auto-replanted cocoa at {}", pos);
+        EmeraldMod.LOGGER.debug("Auto-replanted cocoa at {} (Fortune: {}, Total items: {})",
+                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
+    }
+
+    /**
+     * Apply ADDITIONAL Fortune bonus to drops
+     * This adds extra items on top of vanilla loot table drops
+     */
+    private static void applyFortuneBonus(List<ItemStack> drops, int fortuneLevel) {
+        for (ItemStack drop : drops) {
+            if (drop.isEmpty()) continue;
+
+            // Calculate bonus items based on Fortune level
+            // Fortune I: 33% chance per item for +1
+            // Fortune II: 50% chance per item for +1-2
+            // Fortune III: 75% chance per item for +1-3
+
+            int currentCount = drop.getCount();
+            int bonusItems = 0;
+
+            // For each item in the stack, chance to get bonus
+            for (int i = 0; i < currentCount; i++) {
+                float chance = 0.25f * fortuneLevel; // 25%, 50%, 75%
+
+                if (RANDOM.nextFloat() < chance) {
+                    // Random bonus between 1 and fortuneLevel
+                    bonusItems += RANDOM.nextInt(fortuneLevel) + 1;
+                }
+            }
+
+            // Add bonus items
+            if (bonusItems > 0) {
+                drop.setCount(currentCount + bonusItems);
+                EmeraldMod.LOGGER.debug("Fortune bonus: +{} items (Fortune {})", bonusItems, fortuneLevel);
+            }
+        }
     }
 }

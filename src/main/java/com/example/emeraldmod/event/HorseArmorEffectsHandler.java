@@ -121,28 +121,11 @@ public class HorseArmorEffectsHandler {
             horse.addStatusEffect(new StatusEffectInstance(
                     StatusEffects.REGENERATION,
                     StatusEffectInstance.INFINITE,
-                    0,
+                    1,
                     false,
                     false,
                     false
             ));
-        }
-
-        // 3. Fire Resistance untuk kuda (infinite)
-        if (!hasInfiniteEffect(horse, StatusEffects.FIRE_RESISTANCE)) {
-            horse.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.FIRE_RESISTANCE,
-                    StatusEffectInstance.INFINITE,
-                    0,
-                    false,
-                    false,
-                    false
-            ));
-        }
-
-        // Matikan api jika kuda sedang terbakar
-        if (horse.isOnFire()) {
-            horse.setFireTicks(0);
         }
 
         // 4. Jump Boost untuk kuda (infinite)
@@ -190,29 +173,11 @@ public class HorseArmorEffectsHandler {
             player.addStatusEffect(new StatusEffectInstance(
                     StatusEffects.REGENERATION,
                     StatusEffectInstance.INFINITE,
-                    0,
+                    1,
                     false,
                     false,
                     true
             ));
-        }
-
-        // 3. Fire Resistance - INFINITE (sama seperti armor)
-        // FIX: Cek apakah sudah ada infinite effect sebelum menambahkan
-        if (!hasInfiniteEffect(player, StatusEffects.FIRE_RESISTANCE)) {
-            player.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.FIRE_RESISTANCE,
-                    StatusEffectInstance.INFINITE,
-                    0,
-                    false,
-                    false,
-                    true
-            ));
-        }
-
-        // Matikan api jika pemain sedang terbakar
-        if (player.isOnFire()) {
-            player.setFireTicks(0);
         }
 
         // 4. Jump Boost
@@ -253,11 +218,6 @@ public class HorseArmorEffectsHandler {
             EmeraldMod.LOGGER.debug("Removed REGENERATION from {}", player.getName().getString());
         }
 
-        if (player.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
-            player.removeStatusEffect(StatusEffects.FIRE_RESISTANCE);
-            EmeraldMod.LOGGER.debug("Removed FIRE_RESISTANCE from {}", player.getName().getString());
-        }
-
         if (player.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
             player.removeStatusEffect(StatusEffects.JUMP_BOOST);
             EmeraldMod.LOGGER.debug("Removed JUMP_BOOST from {}", player.getName().getString());
@@ -273,7 +233,6 @@ public class HorseArmorEffectsHandler {
         // Cek apakah pemain punya salah satu horse effect
         return player.hasStatusEffect(StatusEffects.SPEED) ||
                 player.hasStatusEffect(StatusEffects.REGENERATION) ||
-                player.hasStatusEffect(StatusEffects.FIRE_RESISTANCE) ||
                 player.hasStatusEffect(StatusEffects.JUMP_BOOST) ||
                 player.hasStatusEffect(StatusEffects.RESISTANCE);
     }
@@ -288,9 +247,6 @@ public class HorseArmorEffectsHandler {
         // Hapus status effects dari kuda
         if (horse.hasStatusEffect(StatusEffects.REGENERATION)) {
             horse.removeStatusEffect(StatusEffects.REGENERATION);
-        }
-        if (horse.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
-            horse.removeStatusEffect(StatusEffects.FIRE_RESISTANCE);
         }
         if (horse.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
             horse.removeStatusEffect(StatusEffects.JUMP_BOOST);

@@ -1,5 +1,6 @@
 package com.example.emeraldmod.item;
 
+import com.example.emeraldmod.EmeraldMod;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.equipment.ArmorMaterial;
 import net.minecraft.item.equipment.EquipmentType;
@@ -10,6 +11,11 @@ public class EmeraldArmorItem extends ArmorItem {
     public EmeraldArmorItem(ArmorMaterial material, EquipmentType type, Settings settings) {
         super(material, type, settings);
         this.equipmentType = type;
+
+        // DEBUG: Log creation - using type's max damage calculation
+        EmeraldMod.LOGGER.info("Creating EmeraldArmorItem: " + type.getName());
+        EmeraldMod.LOGGER.info("  - Equipment Type: " + type.getName());
+        EmeraldMod.LOGGER.info("  - Expected Max Damage: " + type.getMaxDamage(40));
     }
 
     public EquipmentType getEquipmentType() {
