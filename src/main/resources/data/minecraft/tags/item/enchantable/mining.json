@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "emeraldmod:emerald_pickaxe",
+    "emeraldmod:emerald_axe",
+    "emeraldmod:emerald_shovel"
+  ]
+}

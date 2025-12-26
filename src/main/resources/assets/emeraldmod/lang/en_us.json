@@ -60,5 +60,19 @@
   "effect.emeraldmod.auto_smelt": "Auto Smelt",
   "effect.emeraldmod.tree_chopping": "Tree Chopping",
   "effect.emeraldmod.anti_gravity": "Anti-Gravity",
-  "effect.emeraldmod.auto_replant": "Auto Replant"
+  "effect.emeraldmod.auto_replant": "Auto Replant",
+  "effect.emeraldmod.silent_step": "Silent Step",
+  "effect.emeraldmod.swimming_horse": "Water Swimming Horse",
+  "effect.emeraldmod.horse_fire": "Horse Fire Resistance",
+  "effect.emeraldmod.horse_snow": "Horse Snow Walk",
+  "effect.emeraldmod.horse_lana": "Lava Swimming Horse",
+
+  "key.category.emeraldmod": "Emerald Mod",
+  "key.emeraldmod.toggle_tools": "Toggle Tools Effect",
+  "key.emeraldmod.toggle_armor": "Toggle Armor Effect",
+
+  "message.emeraldmod.tools_enabled": "§a✓ Tools Effect: ON",
+  "message.emeraldmod.tools_disabled": "§c✗ Tools Effect: OFF",
+  "message.emeraldmod.armor_enabled": "§a✓ Armor Effect: ON",
+  "message.emeraldmod.armor_disabled": "§c✗ Armor Effect: OFF"
 }

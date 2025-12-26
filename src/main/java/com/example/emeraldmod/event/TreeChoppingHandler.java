@@ -2,6 +2,7 @@ package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.ModItems;
+import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -76,6 +77,19 @@ public class TreeChoppingHandler {
 
                 if (LOG_BLOCKS.contains(block)) {
                     if (isPartOfTree(world, pos)) {
+                        // ✅ CHECK: Apakah tools effect enabled?
+                        if (!world.isClient) {
+                            ServerWorld serverWorld = (ServerWorld) world;
+                            EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+
+                            if (!stateManager.isToolsEnabled(player.getUuid())) {
+                                // Tools effect DISABLED, biarkan break normal
+                                EmeraldMod.LOGGER.debug("Tree chopping disabled for player {}", player.getName().getString());
+                                return true; // Allow normal vanilla break
+                            }
+                        }
+
+                        // Tools effect ENABLED, lakukan tree chopping
                         handleTreeChopping(world, player, pos, state, tool);
                         return false; // Cancel default break
                     }
@@ -84,7 +98,7 @@ public class TreeChoppingHandler {
             return true;
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Tree Chopping Handler with Fortune & Silk Touch Support");
+        EmeraldMod.LOGGER.info("✓ Registered Tree Chopping Handler with Fortune & Silk Touch Support (Toggleable)");
     }
 
     private static boolean isPartOfTree(World world, BlockPos pos) {

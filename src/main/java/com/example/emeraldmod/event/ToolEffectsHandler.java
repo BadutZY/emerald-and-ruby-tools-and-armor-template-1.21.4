@@ -2,144 +2,130 @@ package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.effect.ModEffects;
 import com.example.emeraldmod.item.ModItems;
+import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class ToolEffectsHandler {
 
     public static void register() {
         ServerTickEvents.START_SERVER_TICK.register(server -> {
+            EffectStateManager stateManager = EffectStateManager.getServerState(server);
+
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                applyToolEffects(player);
+                // Check if tools effect is enabled untuk player ini
+                if (stateManager.isToolsEnabled(player.getUuid())) {
+                    applyToolEffects(player);
+                } else {
+                    // Hapus tool effects jika disabled
+                    removeToolEffects(player);
+                }
             }
         });
     }
 
     private static void applyToolEffects(PlayerEntity player) {
-        // Cek item yang sedang dipegang di main hand
+        // Cek item yang dipegang di main hand dan offhand
         ItemStack mainHandItem = player.getMainHandStack();
+        ItemStack offHandItem = player.getOffHandStack();
 
-        if (mainHandItem.isEmpty()) {
-            // Tidak memegang apa-apa, hapus semua tool effects
-            removeAllToolEffects(player);
+        // Set untuk track effect apa saja yang harus aktif
+        Set<net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect>> activeEffects = new HashSet<>();
+
+        // Check main hand
+        checkAndAddToolEffect(mainHandItem, activeEffects);
+
+        // Check offhand
+        checkAndAddToolEffect(offHandItem, activeEffects);
+
+        // Apply effects yang seharusnya aktif
+        for (var effect : activeEffects) {
+            if (!hasInfiniteEffect(player, effect)) {
+                player.addStatusEffect(new StatusEffectInstance(
+                        effect,
+                        StatusEffectInstance.INFINITE,
+                        0,
+                        false,
+                        false,
+                        true
+                ));
+            }
+        }
+
+        // Remove effects yang tidak seharusnya aktif
+        removeInactiveToolEffects(player, activeEffects);
+    }
+
+    private static void checkAndAddToolEffect(ItemStack itemStack, Set<net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect>> activeEffects) {
+        if (itemStack.isEmpty()) {
             return;
         }
 
         // Emerald Sword - Shockwave Effect
-        if (mainHandItem.getItem() == ModItems.EMERALD_SWORD) {
-            if (!player.hasStatusEffect(ModEffects.SHOCKWAVE_ENTRY)) {
-                player.addStatusEffect(new StatusEffectInstance(
-                        ModEffects.SHOCKWAVE_ENTRY,
-                        StatusEffectInstance.INFINITE, // Infinite duration
-                        0,
-                        false,
-                        false,
-                        true
-                ));
-            }
-            // Hapus effect tool lain
-            removeOtherToolEffects(player, ModEffects.SHOCKWAVE_ENTRY);
+        if (itemStack.getItem() == ModItems.EMERALD_SWORD) {
+            activeEffects.add(ModEffects.SHOCKWAVE_ENTRY);
         }
         // Emerald Pickaxe - Auto Smelt Effect
-        else if (mainHandItem.getItem() == ModItems.EMERALD_PICKAXE) {
-            if (!player.hasStatusEffect(ModEffects.AUTO_SMELT_ENTRY)) {
-                player.addStatusEffect(new StatusEffectInstance(
-                        ModEffects.AUTO_SMELT_ENTRY,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
-                ));
-            }
-            removeOtherToolEffects(player, ModEffects.AUTO_SMELT_ENTRY);
+        else if (itemStack.getItem() == ModItems.EMERALD_PICKAXE) {
+            activeEffects.add(ModEffects.AUTO_SMELT_ENTRY);
         }
         // Emerald Axe - Tree Chopping Effect
-        else if (mainHandItem.getItem() == ModItems.EMERALD_AXE) {
-            if (!player.hasStatusEffect(ModEffects.TREE_CHOPPING_ENTRY)) {
-                player.addStatusEffect(new StatusEffectInstance(
-                        ModEffects.TREE_CHOPPING_ENTRY,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
-                ));
-            }
-            removeOtherToolEffects(player, ModEffects.TREE_CHOPPING_ENTRY);
+        else if (itemStack.getItem() == ModItems.EMERALD_AXE) {
+            activeEffects.add(ModEffects.TREE_CHOPPING_ENTRY);
         }
         // Emerald Shovel - Anti-Gravity Effect
-        else if (mainHandItem.getItem() == ModItems.EMERALD_SHOVEL) {
-            if (!player.hasStatusEffect(ModEffects.ANTI_GRAVITY_ENTRY)) {
-                player.addStatusEffect(new StatusEffectInstance(
-                        ModEffects.ANTI_GRAVITY_ENTRY,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
-                ));
-            }
-            removeOtherToolEffects(player, ModEffects.ANTI_GRAVITY_ENTRY);
+        else if (itemStack.getItem() == ModItems.EMERALD_SHOVEL) {
+            activeEffects.add(ModEffects.ANTI_GRAVITY_ENTRY);
         }
         // Emerald Hoe - Auto Replant Effect
-        else if (mainHandItem.getItem() == ModItems.EMERALD_HOE) {
-            if (!player.hasStatusEffect(ModEffects.AUTO_REPLANT_ENTRY)) {
-                player.addStatusEffect(new StatusEffectInstance(
-                        ModEffects.AUTO_REPLANT_ENTRY,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
-                ));
+        else if (itemStack.getItem() == ModItems.EMERALD_HOE) {
+            activeEffects.add(ModEffects.AUTO_REPLANT_ENTRY);
+        }
+    }
+
+    private static void removeInactiveToolEffects(PlayerEntity player, Set<net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect>> activeEffects) {
+        // Daftar semua tool effects
+        var allToolEffects = new net.minecraft.registry.entry.RegistryEntry[]{
+                ModEffects.SHOCKWAVE_ENTRY,
+                ModEffects.AUTO_SMELT_ENTRY,
+                ModEffects.TREE_CHOPPING_ENTRY,
+                ModEffects.ANTI_GRAVITY_ENTRY,
+                ModEffects.AUTO_REPLANT_ENTRY
+        };
+
+        // Hapus effect yang tidak aktif
+        for (var effect : allToolEffects) {
+            if (!activeEffects.contains(effect) && player.hasStatusEffect(effect)) {
+                player.removeStatusEffect(effect);
             }
-            removeOtherToolEffects(player, ModEffects.AUTO_REPLANT_ENTRY);
-        }
-        // Bukan emerald tool, hapus semua tool effects
-        else {
-            removeAllToolEffects(player);
         }
     }
 
-    private static void removeOtherToolEffects(PlayerEntity player, net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> keepEffect) {
-        // Hapus semua tool effects kecuali yang di-keep
-        if (player.hasStatusEffect(ModEffects.SHOCKWAVE_ENTRY) && !ModEffects.SHOCKWAVE_ENTRY.equals(keepEffect)) {
-            player.removeStatusEffect(ModEffects.SHOCKWAVE_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.AUTO_SMELT_ENTRY) && !ModEffects.AUTO_SMELT_ENTRY.equals(keepEffect)) {
-            player.removeStatusEffect(ModEffects.AUTO_SMELT_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.TREE_CHOPPING_ENTRY) && !ModEffects.TREE_CHOPPING_ENTRY.equals(keepEffect)) {
-            player.removeStatusEffect(ModEffects.TREE_CHOPPING_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.ANTI_GRAVITY_ENTRY) && !ModEffects.ANTI_GRAVITY_ENTRY.equals(keepEffect)) {
-            player.removeStatusEffect(ModEffects.ANTI_GRAVITY_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.AUTO_REPLANT_ENTRY) && !ModEffects.AUTO_REPLANT_ENTRY.equals(keepEffect)) {
-            player.removeStatusEffect(ModEffects.AUTO_REPLANT_ENTRY);
-        }
-    }
-
-    private static void removeAllToolEffects(PlayerEntity player) {
+    private static void removeToolEffects(PlayerEntity player) {
         // Hapus semua tool effects
-        if (player.hasStatusEffect(ModEffects.SHOCKWAVE_ENTRY)) {
-            player.removeStatusEffect(ModEffects.SHOCKWAVE_ENTRY);
+        player.removeStatusEffect(ModEffects.SHOCKWAVE_ENTRY);
+        player.removeStatusEffect(ModEffects.AUTO_SMELT_ENTRY);
+        player.removeStatusEffect(ModEffects.TREE_CHOPPING_ENTRY);
+        player.removeStatusEffect(ModEffects.ANTI_GRAVITY_ENTRY);
+        player.removeStatusEffect(ModEffects.AUTO_REPLANT_ENTRY);
+    }
+
+    /**
+     * Cek apakah player sudah memiliki effect dengan duration INFINITE
+     * Untuk mencegah blinking icon
+     */
+    private static boolean hasInfiniteEffect(PlayerEntity player, net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> effect) {
+        StatusEffectInstance instance = player.getStatusEffect(effect);
+        if (instance == null) {
+            return false;
         }
-        if (player.hasStatusEffect(ModEffects.AUTO_SMELT_ENTRY)) {
-            player.removeStatusEffect(ModEffects.AUTO_SMELT_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.TREE_CHOPPING_ENTRY)) {
-            player.removeStatusEffect(ModEffects.TREE_CHOPPING_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.ANTI_GRAVITY_ENTRY)) {
-            player.removeStatusEffect(ModEffects.ANTI_GRAVITY_ENTRY);
-        }
-        if (player.hasStatusEffect(ModEffects.AUTO_REPLANT_ENTRY)) {
-            player.removeStatusEffect(ModEffects.AUTO_REPLANT_ENTRY);
-        }
+        // Cek apakah duration adalah INFINITE
+        return instance.isDurationBelow(0) || instance.getDuration() == StatusEffectInstance.INFINITE;
     }
 }

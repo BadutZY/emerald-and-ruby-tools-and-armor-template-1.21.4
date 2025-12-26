@@ -2,6 +2,7 @@ package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.ModItems;
+import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -53,6 +54,19 @@ public class SwordShockwaveHandler {
                 return ActionResult.PASS;
             }
 
+            // ✅ CHECK: Apakah tools effect enabled? (Server-side only)
+            if (!world.isClient) {
+                ServerWorld serverWorld = (ServerWorld) world;
+                EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+
+                if (!stateManager.isToolsEnabled(player.getUuid())) {
+                    // Tools effect DISABLED, reset counter dan biarkan normal attack
+                    HIT_COUNTER.remove(player.getUuid());
+                    EmeraldMod.LOGGER.debug("Shockwave disabled for player {}", player.getName().getString());
+                    return ActionResult.PASS;
+                }
+            }
+
             // Process di server side
             if (!world.isClient) {
                 handleSwordHit(player, world, target, weapon);
@@ -61,7 +75,7 @@ public class SwordShockwaveHandler {
             return ActionResult.PASS; // Allow normal attack
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Shockwave Handler for Emerald Sword (with 3x Direct Hit + AoE Damage)");
+        EmeraldMod.LOGGER.info("✓ Registered Shockwave Handler for Emerald Sword (with 3x Direct Hit + AoE Damage - Toggleable)");
     }
 
     private static void handleSwordHit(PlayerEntity player, World world, LivingEntity target, ItemStack sword) {
@@ -182,8 +196,6 @@ public class SwordShockwaveHandler {
             }
 
             // Hitung damage berdasarkan jarak (lebih dekat = lebih kuat)
-            // Damage formula: Base damage * (1 - distance/radius)
-            // Contoh: Jarak 0 = 100% damage, Jarak 5 = 0% damage
             float distanceFactor = (float) (1.0 - (distance / SHOCKWAVE_RADIUS));
             float aoeDamage = SHOCKWAVE_BASE_DAMAGE * distanceFactor;
 

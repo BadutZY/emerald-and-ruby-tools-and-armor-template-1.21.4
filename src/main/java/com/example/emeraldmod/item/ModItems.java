@@ -92,6 +92,11 @@ public class ModItems {
     public static void registerModItems() {
         EmeraldMod.LOGGER.info("Registering Mod Items for " + EmeraldMod.MOD_ID);
 
+        // Initialize materials FIRST
+        ModToolMaterial.initialize();
+        ModArmorMaterial.initialize();
+        NetheriteArmorMaterial.initialize();
+
         // Add to Combat tab
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
             entries.add(EMERALD_SWORD);
@@ -113,9 +118,9 @@ public class ModItems {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
             entries.add(EMERALD_UPGRADE_SMITHING_TEMPLATE);
             entries.add(EMERALD_HORSE_ARMOR);
-            entries.add(NETHERITE_HORSE_ARMOR); // NEW!
+            entries.add(NETHERITE_HORSE_ARMOR);
         });
 
-        EmeraldMod.LOGGER.info("Successfully registered items including Netherite Horse Armor");
+        EmeraldMod.LOGGER.info("✓ Successfully registered all items with enchantability support");
     }
 }

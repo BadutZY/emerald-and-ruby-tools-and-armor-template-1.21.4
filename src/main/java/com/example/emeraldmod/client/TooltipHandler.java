@@ -60,9 +60,9 @@ public class TooltipHandler {
     }
 
     private static void addSwordTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Shockwave").formatted(Formatting.AQUA));
             addDescriptionSword(lines);
         } else {
@@ -78,9 +78,9 @@ public class TooltipHandler {
     }
 
     private static void addPickaxeTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Auto Smelt").formatted(Formatting.DARK_RED));
             addDescriptionPickaxe(lines);
         } else {
@@ -95,9 +95,9 @@ public class TooltipHandler {
     }
 
     private static void addAxeTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Tree Chopper").formatted(Formatting.RED));
             addDescriptionAxe(lines);
         } else {
@@ -112,9 +112,9 @@ public class TooltipHandler {
     }
 
     private static void addShovelTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Anti-Gravity").formatted(Formatting.DARK_AQUA));
             addDescriptionShovel(lines);
         } else {
@@ -130,9 +130,9 @@ public class TooltipHandler {
     }
 
     private static void addHoeTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Auto-Replant").formatted(Formatting.DARK_GREEN));
             addDescriptionHoe(lines);
         } else {
@@ -147,9 +147,9 @@ public class TooltipHandler {
     }
 
     private static void addHelmetTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Water Breathing").formatted(Formatting.AQUA));
             lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
             addDescriptionHelmet(lines);
@@ -166,9 +166,9 @@ public class TooltipHandler {
     }
 
     private static void addChestplateTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
-        if (shift) {
+        if (shift)
+            {lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Dolphin's Grace").formatted(Formatting.AQUA));
             lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
             addDescriptionChestplate(lines);
@@ -185,9 +185,10 @@ public class TooltipHandler {
     }
 
     private static void addLeggingsTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Silent Step").formatted(Formatting.DARK_BLUE));
             lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
             addDescriptionLeggings(lines);
         } else {
@@ -198,13 +199,14 @@ public class TooltipHandler {
     private static void addDescriptionLeggings(List<Text> lines) {
         lines.add(Text.literal(" ").formatted(Formatting.WHITE));
         lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("- not detected by Sculk Sensor").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
     }
 
     private static void addBootsTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Snow Walk").formatted(Formatting.AQUA));
             lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
             addDescriptionBoots(lines);
@@ -221,14 +223,14 @@ public class TooltipHandler {
     }
 
     private static void addHorseArmorTooltip(List<Text> lines, boolean shift) {
-        lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
 
         if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
             lines.add(Text.literal("• Speed").formatted(Formatting.AQUA));
             lines.add(Text.literal("• Regeneration").formatted(Formatting.RED));
-            lines.add(Text.literal("• Fire resistant").formatted(Formatting.DARK_RED));
             lines.add(Text.literal("• Jump Boost").formatted(Formatting.BLUE));
-            lines.add(Text.literal("• Resistant").formatted(Formatting.WHITE));
+            lines.add(Text.literal("• Swimming Horse").formatted(Formatting.WHITE));
+            lines.add(Text.literal("• Resistant").formatted(Formatting.GRAY));
             addDescriptionHorseArmor(lines);
         } else {
             addShiftHint(lines);
@@ -240,9 +242,9 @@ public class TooltipHandler {
         lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
         lines.add(Text.literal("- Increase speed").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Healing").formatted(Formatting.GRAY));
-        lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Increase Jump").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Reduces incoming damage").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Horses can swim").formatted(Formatting.GRAY));
     }
 
     private static void addUpgradeTooltip(List<Text> lines) {

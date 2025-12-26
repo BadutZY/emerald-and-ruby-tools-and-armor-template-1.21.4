@@ -2,6 +2,7 @@ package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.ModItems;
+import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.*;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -31,6 +32,18 @@ public class AutoReplantHandler {
                 return ActionResult.PASS;
             }
 
+            // ✅ CHECK: Apakah tools effect enabled? (Server-side only)
+            if (!world.isClient) {
+                ServerWorld serverWorld = (ServerWorld) world;
+                EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+
+                if (!stateManager.isToolsEnabled(player.getUuid())) {
+                    // Tools effect DISABLED, biarkan vanilla behavior
+                    EmeraldMod.LOGGER.debug("Auto-replant disabled for player {}", player.getName().getString());
+                    return ActionResult.PASS;
+                }
+            }
+
             // Cek apakah di server side
             if (world.isClient) {
                 return ActionResult.SUCCESS;
@@ -48,7 +61,7 @@ public class AutoReplantHandler {
             return ActionResult.PASS;
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Auto-Replant Handler with Fortune Support");
+        EmeraldMod.LOGGER.info("✓ Registered Auto-Replant Handler with Fortune Support (Toggleable)");
     }
 
     private static boolean handleCropBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, Block block, ItemStack hoe) {
@@ -329,11 +342,6 @@ public class AutoReplantHandler {
     private static void applyFortuneBonus(List<ItemStack> drops, int fortuneLevel) {
         for (ItemStack drop : drops) {
             if (drop.isEmpty()) continue;
-
-            // Calculate bonus items based on Fortune level
-            // Fortune I: 33% chance per item for +1
-            // Fortune II: 50% chance per item for +1-2
-            // Fortune III: 75% chance per item for +1-3
 
             int currentCount = drop.getCount();
             int bonusItems = 0;

@@ -2,6 +2,7 @@ package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.ModItems;
+import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -67,7 +68,21 @@ public class AntiGravityHandler {
                 return true;
             }
 
+            // ✅ CHECK: Apakah tools effect enabled?
             ServerWorld serverWorld = (ServerWorld) world;
+            EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+
+            if (!stateManager.isToolsEnabled(player.getUuid())) {
+                // Tools effect DISABLED, biarkan break normal
+                EmeraldMod.LOGGER.debug("Anti-gravity disabled for player {}", player.getName().getString());
+
+                // Jika block yang dihancurkan adalah stabilized block, remove dari set
+                if (STABILIZED_BLOCKS.remove(pos)) {
+                    EmeraldMod.LOGGER.debug("Removed stabilized block at {} (player breaking it)", pos);
+                }
+
+                return true; // Allow normal vanilla break
+            }
 
             // UNIVERSAL: Check and stabilize falling blocks regardless of what block is broken
             // This means breaking stone, dirt, wood, etc will also stabilize falling blocks above
@@ -90,11 +105,18 @@ public class AntiGravityHandler {
                 return;
             }
 
+            // Check if tools effect enabled
             ServerWorld serverWorld = (ServerWorld) world;
+            EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+
+            if (!stateManager.isToolsEnabled(player.getUuid())) {
+                return; // Don't show effects if disabled
+            }
+
             spawnStabilizationEffects(serverWorld, pos);
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Anti-Gravity Handler (UNIVERSAL STABILIZATION - ALL BLOCKS)");
+        EmeraldMod.LOGGER.info("✓ Registered Anti-Gravity Handler (UNIVERSAL STABILIZATION - ALL BLOCKS - Toggleable)");
     }
 
     private static void stabilizeSurroundingFallingBlocks(ServerWorld world, BlockPos breakPos) {

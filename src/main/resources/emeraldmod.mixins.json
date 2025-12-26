@@ -3,9 +3,18 @@
 	"package": "com.example.emeraldmod.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"PowderSnowBlockMixin",
+		"EntityMixin",
+		"EntityPowderSnowCheckMixin",
+		"FallingBlockEntityMixin",
 		"FallingBlockMixin",
-		"FallingBlockEntityMixin"
+		"HorseEntityPowderSnowMixin",
+		"LivingEntityMixin",
+		"PlayerEntitySilentMixin",
+		"PowderSnowBlockMixin",
+		"SculkSensorBlockMixin",
+		"SculkShriekerBlockMixin",
+		"ServerWorldMixin",
+		"TripwireHookBlockMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

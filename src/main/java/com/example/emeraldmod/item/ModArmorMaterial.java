@@ -27,6 +27,15 @@ public class ModArmorMaterial {
             Identifier.of(EmeraldMod.MOD_ID, "emerald")
     );
 
+    // ArmorMaterial constructor parameters di 1.21.4:
+    // 1. durability multiplier (int)
+    // 2. protection values (Map<EquipmentType, Integer>)
+    // 3. enchantability (int)
+    // 4. equip sound (RegistryEntry<SoundEvent>)
+    // 5. toughness (float)
+    // 6. knockback resistance (float)
+    // 7. repair ingredient tag (TagKey<Item>)
+    // 8. equipment asset (RegistryKey<EquipmentAsset>)
     public static final ArmorMaterial EMERALD_ARMOR_MATERIAL = new ArmorMaterial(
             BASE_DURABILITY,
             Map.of(
@@ -36,15 +45,19 @@ public class ModArmorMaterial {
                     EquipmentType.HELMET, 5,
                     EquipmentType.BODY, 22
             ),
-            16,
+            10, // Enchantability (Diamond = 10)
             SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND,
-            5.0F,
-            0.3F,
+            5.0F, // Toughness (Netherite level)
+            0.3F, // Knockback resistance (higher than diamond)
             EMERALD_REPAIR_INGREDIENT,
             EMERALD_EQUIPMENT_ASSET
     );
 
     public static void initialize() {
-        EmeraldMod.LOGGER.info("Initializing Emerald Armor Materials with Trim Support");
+        EmeraldMod.LOGGER.info("Initializing Emerald Armor Materials");
+        EmeraldMod.LOGGER.info("  - Base Durability: " + BASE_DURABILITY);
+        EmeraldMod.LOGGER.info("  - Enchantability: 10 (Diamond tier)");
+        EmeraldMod.LOGGER.info("  - Toughness: 5.0 (Netherite level)");
+        EmeraldMod.LOGGER.info("  - Knockback Resistance: 0.3");
     }
 }

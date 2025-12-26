@@ -4,6 +4,8 @@ import com.example.emeraldmod.effect.ModEffects;
 import com.example.emeraldmod.event.*;
 import com.example.emeraldmod.item.ModItemGroups;
 import com.example.emeraldmod.item.ModItems;
+import com.example.emeraldmod.network.ServerPacketHandler;
+import com.example.emeraldmod.network.ToggleEffectPacket;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import org.slf4j.Logger;
@@ -28,6 +30,11 @@ public class EmeraldMod implements ModInitializer {
         debugArmorModels();
         debugTextures();
 
+        // Register network packets FIRST
+        ToggleEffectPacket.register();
+        ServerPacketHandler.register();
+        LOGGER.info("✓ Registered Network Packets for Toggle System");
+
         // Register custom effects FIRST (sebelum handler)
         ModEffects.registerModEffects();
 
@@ -38,41 +45,45 @@ public class EmeraldMod implements ModInitializer {
         // Register item groups SETELAH items
         ModItemGroups.registerItemGroups();
 
-        // Register armor effects handler
+        // Register armor effects handler (with toggle support)
         ArmorEffectsHandler.register();
-        LOGGER.info("✓ Registered Emerald Armor Effects Handler");
+        LOGGER.info("✓ Registered Emerald Armor Effects Handler (Toggle: ON/OFF)");
 
-        // Register horse armor effects handler
+        // Register horse armor effects handler (always active)
         HorseArmorEffectsHandler.register();
-        LOGGER.info("✓ Registered Emerald Horse Armor Effects Handler");
+        LOGGER.info("✓ Registered Emerald Horse Armor Effects Handler (Always Active)");
 
-        // Register tool effects handler
+        // Register tool effects handler (with toggle support)
         ToolEffectsHandler.register();
-        LOGGER.info("✓ Registered Emerald Tool Effects Handler");
+        LOGGER.info("✓ Registered Emerald Tool Effects Handler (Toggle: ON/OFF)");
 
-        // Register damage prevention handler
+        // Register damage prevention handler (with toggle check)
         DamagePreventionHandler.register();
-        LOGGER.info("✓ Registered Fire & Piglin Damage Prevention Handler");
+        LOGGER.info("✓ Registered Fire Damage Prevention Handler (Toggleable)");
 
-        // Register auto-smelt handler for pickaxe
+        // Register auto-smelt handler for pickaxe (with toggle check)
         AutoSmeltHandler.register();
-        LOGGER.info("✓ Registered Auto-Smelt Handler for Emerald Pickaxe");
+        LOGGER.info("✓ Registered Auto-Smelt Handler for Emerald Pickaxe (Toggleable)");
 
-        // Register tree chopping handler for axe
+        // Register tree chopping handler for axe (with toggle check)
         TreeChoppingHandler.register();
-        LOGGER.info("✓ Registered Tree Chopping Handler for Emerald Axe");
+        LOGGER.info("✓ Registered Tree Chopping Handler for Emerald Axe (Toggleable)");
 
-        // Register auto-replant handler for hoe
+        // Register auto-replant handler for hoe (with toggle check)
         AutoReplantHandler.register();
-        LOGGER.info("✓ Registered Auto-Replant Handler for Emerald Hoe");
+        LOGGER.info("✓ Registered Auto-Replant Handler for Emerald Hoe (Toggleable)");
 
-        // Register shockwave handler for sword
+        // Register shockwave handler for sword (with toggle check)
         SwordShockwaveHandler.register();
-        LOGGER.info("✓ Registered Shockwave Handler for Emerald Sword");
+        LOGGER.info("✓ Registered Shockwave Handler for Emerald Sword (Toggleable)");
 
-        // Register anti-gravity handler for shovel
+        // Register anti-gravity handler for shovel (with toggle check)
         AntiGravityHandler.register();
-        LOGGER.info("✓ Registered Anti-Gravity Handler for Emerald Shovel");
+        LOGGER.info("✓ Registered Anti-Gravity Handler for Emerald Shovel (Toggleable)");
+
+        // FIXED: Register ONLY PowderSnowHandler (yang sudah include sink logic)
+        PowderSnowHandler.register();
+        LOGGER.info("✓ Registered Powder Snow Handler (Walk on top when ON, Sink when OFF)");
 
         // Register server tick event untuk Anti-Gravity handler
         ServerTickEvents.END_WORLD_TICK.register(world -> {
@@ -82,13 +93,21 @@ public class EmeraldMod implements ModInitializer {
 
         LOGGER.info("========================================");
         LOGGER.info("Emerald Tools & Armor Mod initialized!");
+        LOGGER.info("");
+        LOGGER.info("🎮 KEYBIND CONTROLS:");
+        LOGGER.info("  - Toggle Tools Effect: V (default)");
+        LOGGER.info("  - Toggle Armor Effect: B (default)");
+        LOGGER.info("  - Customize in: Options → Controls → Emerald Mod");
+        LOGGER.info("");
         LOGGER.info("All Protection Features Active:");
         LOGGER.info("  - Water Breathing (Helmet)");
         LOGGER.info("  - Dolphin's Grace (Chestplate)");
         LOGGER.info("  - Fire Immunity (All Armor)");
-        LOGGER.info("  - Snow Powder Walker (Boots) - CUSTOM ICON");
+        LOGGER.info("  - Snow Powder Walker (Boots) - TOGGLEABLE");
         LOGGER.info("  - Piglin Neutral (All Armor) - MEMORY CONTROLLED");
-        LOGGER.info("  - ENCHANTABILITY: 20 (Same as Diamond)");
+        LOGGER.info("  - Silent Step (Leggings) - STEALTH MODE");
+        LOGGER.info("  - ENCHANTABILITY: 10 (Same as Diamond)");
+        LOGGER.info("  - ENCHANTMENT SUPPORT: ENABLED");
         LOGGER.info("");
         LOGGER.info("All Tool Features Active:");
         LOGGER.info("  - Shockwave Strike (Sword) - EVERY 3RD HIT + ICON");
@@ -97,12 +116,15 @@ public class EmeraldMod implements ModInitializer {
         LOGGER.info("  - Anti-Gravity (Shovel) - PREVENT FALLING BLOCKS + ICON");
         LOGGER.info("  - Auto-Replant (Hoe) - RIGHT CLICK CROPS + ICON");
         LOGGER.info("");
-        LOGGER.info("Horse Armor Features Active:");
+        LOGGER.info("Horse Armor Features Active (Always ON):");
         LOGGER.info("  - Speed Boost (30% faster movement)");
         LOGGER.info("  - Regeneration (Health regen)");
         LOGGER.info("  - Fire Resistance (Immune to fire)");
+        LOGGER.info("  - Lava Swimming (Can swim in lava)");
+        LOGGER.info("  - Water Swimming (Can swim in water)");
         LOGGER.info("  - Jump Boost (Higher jumps)");
         LOGGER.info("  - Resistance (Reduced damage)");
+        LOGGER.info("  - Powder Snow Walker (Walk on powder snow)");
         LOGGER.info("========================================");
     }
 

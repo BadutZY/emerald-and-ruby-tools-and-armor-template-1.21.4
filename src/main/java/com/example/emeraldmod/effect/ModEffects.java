@@ -15,6 +15,11 @@ public class ModEffects {
             new SnowPowderWalkerEffect());
     public static RegistryEntry<StatusEffect> SNOW_POWDER_WALKER_ENTRY;
 
+    // Status Effect untuk Silent Step (Leggings)
+    public static final StatusEffect SILENT_STEP = registerEffect("silent_step",
+            new SilentStepEffect());
+    public static RegistryEntry<StatusEffect> SILENT_STEP_ENTRY;
+
     // ===== TOOL EFFECTS =====
     // Status Effect untuk Shockwave (Sword)
     public static final StatusEffect SHOCKWAVE = registerEffect("shockwave",
@@ -41,6 +46,24 @@ public class ModEffects {
             new AutoReplantEffect());
     public static RegistryEntry<StatusEffect> AUTO_REPLANT_ENTRY;
 
+    // ===== HORSE ARMOR EFFECTS =====
+    // Status Effect untuk Swimming Horse
+    public static final StatusEffect SWIMMING_HORSE = registerEffect("swimming_horse",
+            new SwimmingHorseEffect());
+    public static RegistryEntry<StatusEffect> SWIMMING_HORSE_ENTRY;
+
+    public static final StatusEffect HORSE_FIRE = registerEffect("horse_fire",
+            new HorseFireEffect());
+    public static RegistryEntry<StatusEffect> HORSE_FIRE_ENTRY;
+
+    public static final StatusEffect HORSE_LAVA = registerEffect("horse_lava",
+            new HorseLavaEffect());
+    public static RegistryEntry<StatusEffect> HORSE_LAVA_ENTRY;
+
+    public static final StatusEffect HORSE_SNOW = registerEffect("horse_snow",
+            new HorseSnowEffect());
+    public static RegistryEntry<StatusEffect> HORSE_SNOW_ENTRY;
+
     private static StatusEffect registerEffect(String name, StatusEffect effect) {
         Identifier id = Identifier.of(EmeraldMod.MOD_ID, name);
         EmeraldMod.LOGGER.info("Registering status effect: " + id);
@@ -54,31 +77,42 @@ public class ModEffects {
 
         // Get registry entries setelah effect di-register
         SNOW_POWDER_WALKER_ENTRY = Registries.STATUS_EFFECT.getEntry(SNOW_POWDER_WALKER);
+        SILENT_STEP_ENTRY = Registries.STATUS_EFFECT.getEntry(SILENT_STEP);
         SHOCKWAVE_ENTRY = Registries.STATUS_EFFECT.getEntry(SHOCKWAVE);
         AUTO_SMELT_ENTRY = Registries.STATUS_EFFECT.getEntry(AUTO_SMELT);
         TREE_CHOPPING_ENTRY = Registries.STATUS_EFFECT.getEntry(TREE_CHOPPING);
         ANTI_GRAVITY_ENTRY = Registries.STATUS_EFFECT.getEntry(ANTI_GRAVITY);
         AUTO_REPLANT_ENTRY = Registries.STATUS_EFFECT.getEntry(AUTO_REPLANT);
+        SWIMMING_HORSE_ENTRY = Registries.STATUS_EFFECT.getEntry(SWIMMING_HORSE);
+        HORSE_FIRE_ENTRY = Registries.STATUS_EFFECT.getEntry(HORSE_FIRE);
+        HORSE_LAVA_ENTRY = Registries.STATUS_EFFECT.getEntry(HORSE_LAVA);
+        HORSE_SNOW_ENTRY = Registries.STATUS_EFFECT.getEntry(HORSE_SNOW);
 
-        EmeraldMod.LOGGER.info("✓ Registered Armor Effects:");
+        EmeraldMod.LOGGER.info("âœ“ Registered Armor Effects:");
         EmeraldMod.LOGGER.info("  - Snow Powder Walker (Boots)");
+        EmeraldMod.LOGGER.info("  - Silent Step (Leggings)");
         EmeraldMod.LOGGER.info("  - Custom Fire Resistance (Hidden Icon)");
 
-        EmeraldMod.LOGGER.info("✓ Registered Tool Effects:");
+        EmeraldMod.LOGGER.info("âœ“ Registered Tool Effects:");
         EmeraldMod.LOGGER.info("  - Shockwave (Sword)");
         EmeraldMod.LOGGER.info("  - Auto Smelt (Pickaxe)");
         EmeraldMod.LOGGER.info("  - Tree Chopping (Axe)");
         EmeraldMod.LOGGER.info("  - Anti-Gravity (Shovel)");
         EmeraldMod.LOGGER.info("  - Auto Replant (Hoe)");
+
+        EmeraldMod.LOGGER.info("âœ“ Registered Horse Armor Effects:");
+        EmeraldMod.LOGGER.info("  - Swimming Horse");
         EmeraldMod.LOGGER.info("========================================");
 
         // Log texture paths untuk debugging
         EmeraldMod.LOGGER.info("Expected texture paths:");
         EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/snow_powder_walker.png");
+        EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/silent_step.png");
         EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/shockwave.png");
         EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/auto_smelt.png");
         EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/tree_chopping.png");
         EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/anti_gravity.png");
         EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/auto_replant.png");
+        EmeraldMod.LOGGER.info("assets/emeraldmod/textures/mob_effect/swimming_horse.png");
     }
 }
