@@ -1,5 +1,6 @@
 <h1> Emerald & Ruby Tools and Armors</h1>
 <img width="250" height="250" alt="icon" src="https://github.com/user-attachments/assets/7f602af5-2514-437d-a76e-3d07c497936c" />
+<p>Mod that adds ruby ​​ore and ruby ​​tools as well as emerald tools that have special effects</p>
 
 <h2> Mod Maker </h2>
 <a href="https://modrinth.com/user/BadutZY" target="_blank">Me</a> and <a href="https://claude.ai/" target="_blank"> ClaudeAI </a>
