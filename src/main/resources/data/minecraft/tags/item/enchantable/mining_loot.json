@@ -3,6 +3,10 @@
   "values": [
     "emeraldmod:emerald_pickaxe",
     "emeraldmod:emerald_axe",
-    "emeraldmod:emerald_shovel"
+    "emeraldmod:emerald_shovel",
+
+    "emeraldmod:ruby_pickaxe",
+    "emeraldmod:ruby_axe",
+    "emeraldmod:ruby_shovel"
   ]
 }

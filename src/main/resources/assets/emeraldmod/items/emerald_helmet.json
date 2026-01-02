@@ -5,79 +5,93 @@
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/quartz_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/quartz_trim"
         },
         "when": "minecraft:quartz"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/iron_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/iron_trim"
         },
         "when": "minecraft:iron"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/netherite_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/netherite_trim"
         },
         "when": "minecraft:netherite"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/redstone_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/redstone_trim"
         },
         "when": "minecraft:redstone"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/copper_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/copper_trim"
         },
         "when": "minecraft:copper"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/gold_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/gold_trim"
         },
         "when": "minecraft:gold"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/emerald_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/emerald_trim"
         },
         "when": "minecraft:emerald"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/diamond_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/diamond_trim"
         },
         "when": "minecraft:diamond"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/lapis_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/lapis_trim"
         },
         "when": "minecraft:lapis"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/amethyst_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/amethyst_trim"
         },
         "when": "minecraft:amethyst"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/helmet/resin_trim"
+          "model": "emeraldmod:item/trims/emerald/helmet/resin_trim"
         },
         "when": "minecraft:resin"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/emerald/helmet/ruby_trim"
+        },
+        "when": "emeraldmod:ruby"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/emerald/helmet/ruby_trim"
+        },
+        "when": "emeraldmod:ruby_ingot"
       }
     ],
     "fallback": {

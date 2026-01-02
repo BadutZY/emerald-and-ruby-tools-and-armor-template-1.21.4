@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": "emeraldmod:raw_ruby"
+  },
+  "result": {
+    "id": "emeraldmod:raw_ruby_block",
+    "count": 1
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "emeraldmod:block/ruby_ingot_block"
+  }
+}

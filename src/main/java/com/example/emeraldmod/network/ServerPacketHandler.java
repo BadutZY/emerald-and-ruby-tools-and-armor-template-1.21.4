@@ -1,8 +1,13 @@
 package com.example.emeraldmod.network;
 
 import com.example.emeraldmod.EmeraldMod;
+import com.example.emeraldmod.item.ModItems;
 import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 /**
@@ -39,6 +44,20 @@ public class ServerPacketHandler {
                                         player.getName().getString(),
                                         packet.enabled() ? "ON" : "OFF");
 
+                                // ⭐ IMPROVED: Jika enabled dan player punya Ruby Armor, hapus negative effects SEGERA
+                                if (packet.enabled() && hasAnyRubyArmor(player)) {
+                                    // Hapus negative effects 2x untuk memastikan benar-benar bersih
+                                    removeAllNegativeEffects(player);
+
+                                    // Schedule removal lagi setelah 1 tick untuk handle edge cases
+                                    context.server().execute(() -> {
+                                        removeAllNegativeEffects(player);
+                                    });
+
+                                    EmeraldMod.LOGGER.info("Immediately cleared all negative effects from player {} (Armor effect enabled with Ruby Armor)",
+                                            player.getName().getString());
+                                }
+
                                 // Hapus armor effects jika disabled
                                 if (!packet.enabled()) {
                                     removeArmorEffects(player);
@@ -50,6 +69,46 @@ public class ServerPacketHandler {
         );
 
         EmeraldMod.LOGGER.info("✓ Registered Server Packet Handlers");
+    }
+
+    /**
+     * ⭐ NEW METHOD: Check if player is wearing ANY Ruby armor piece
+     */
+    private static boolean hasAnyRubyArmor(ServerPlayerEntity player) {
+        ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
+        ItemStack chestplate = player.getEquippedStack(EquipmentSlot.CHEST);
+        ItemStack leggings = player.getEquippedStack(EquipmentSlot.LEGS);
+        ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
+
+        return helmet.getItem() == ModItems.RUBY_HELMET ||
+                chestplate.getItem() == ModItems.RUBY_CHESTPLATE ||
+                leggings.getItem() == ModItems.RUBY_LEGGINGS ||
+                boots.getItem() == ModItems.RUBY_BOOTS;
+    }
+
+    /**
+     * ⭐ IMPROVED METHOD: Remove semua negative effects dari player
+     * Hanya menghapus HARMFUL effects, membiarkan BENEFICIAL effects
+     */
+    private static void removeAllNegativeEffects(ServerPlayerEntity player) {
+        // Collect list of negative effects untuk dihapus
+        java.util.List<net.minecraft.registry.entry.RegistryEntry<StatusEffect>> effectsToRemove =
+                new java.util.ArrayList<>();
+
+        // Scan semua active effects
+        for (net.minecraft.entity.effect.StatusEffectInstance activeEffect : player.getStatusEffects()) {
+            StatusEffect statusEffect = activeEffect.getEffectType().value();
+
+            // Hanya collect HARMFUL effects (negative)
+            if (statusEffect.getCategory() == StatusEffectCategory.HARMFUL) {
+                effectsToRemove.add(activeEffect.getEffectType());
+            }
+        }
+
+        // Remove semua negative effects yang sudah di-collect
+        for (net.minecraft.registry.entry.RegistryEntry<StatusEffect> effectToRemove : effectsToRemove) {
+            player.removeStatusEffect(effectToRemove);
+        }
     }
 
     /**
@@ -91,9 +150,11 @@ public class ServerPacketHandler {
         try {
             var silentStepField = ModEffects.getField("SILENT_STEP_ENTRY");
             var snowWalkerField = ModEffects.getField("SNOW_POWDER_WALKER_ENTRY");
+            var negativeImmunityField = ModEffects.getField("NEGATIVE_IMMUNITY_ENTRY");
 
             player.removeStatusEffect((net.minecraft.registry.entry.RegistryEntry) silentStepField.get(null));
             player.removeStatusEffect((net.minecraft.registry.entry.RegistryEntry) snowWalkerField.get(null));
+            player.removeStatusEffect((net.minecraft.registry.entry.RegistryEntry) negativeImmunityField.get(null));
 
         } catch (Exception e) {
             EmeraldMod.LOGGER.error("Failed to remove armor effects", e);

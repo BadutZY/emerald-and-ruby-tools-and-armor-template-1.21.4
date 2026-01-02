@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "emeraldmod:ruby_ore",
+    "emeraldmod:deepslate_ruby_ore",
+    "emeraldmod:ruby_block",
+    "emeraldmod:raw_ruby_block",
+    "emeraldmod:nether_ruby_ore",
+    "emeraldmod:ruby_debris",
+    "emeraldmod:ruby_ingot_block"
+  ]
+}

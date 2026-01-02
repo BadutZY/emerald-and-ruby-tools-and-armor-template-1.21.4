@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "emeraldmod:block/ruby_debris_top",
+    "side": "emeraldmod:block/ruby_debris_side"
+  }
+}

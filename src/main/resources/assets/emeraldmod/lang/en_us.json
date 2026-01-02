@@ -1,6 +1,63 @@
 {
+  "itemgroup.emeraldmod.ruby_equipment": "Ruby Tools & Armor",
   "itemgroup.emeraldmod.emerald": "Emerald Tools & Armor",
   "itemgroup.emeraldmod.netherite": "Netherite Tools & Armor",
+  "itemgroup.emeraldmod.ruby_materials": "Ruby Block & Ores",
+
+  "item.emeraldmod.ruby": "Ruby",
+  "item.emeraldmod.raw_ruby": "Raw Ruby",
+  "item.emeraldmod.ruby_ingot": "Ruby Ingot",
+  "item.emeraldmod.ruby_scrap": "Ruby Scrap",
+  "item.emeraldmod.ruby_nugget": "Ruby Nugget",
+
+  "block.emeraldmod.ruby_ore": "Ruby Ore",
+  "block.emeraldmod.deepslate_ruby_ore": "Deepslate Ruby Ore",
+  "block.emeraldmod.nether_ruby_ore": "Nether Ruby Ore",
+
+  "block.emeraldmod.ruby_block": "Block of Ruby",
+  "block.emeraldmod.raw_ruby_block": "Block of Raw Ruby",
+  "block.emeraldmod.ruby_debris": "Ruby Debris",
+  "block.emeraldmod.ruby_ingot_block": "Block of Ruby Ingot",
+
+  "item.emeraldmod.ruby_sword": "Ruby Sword",
+  "item.emeraldmod.ruby_sword.tooltip": "§6Special Effect: Shockwave Strike",
+  "item.emeraldmod.ruby_sword.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Every 3rd hit creates a§r\n§7powerful shockwave§r\n§7• Bonus Damage: §c+8.0§r\n§7  to direct target§r\n§7• AoE Damage: §c6.0§r\n§7  in 5 block radius§r\n§7• Launches enemies§r\n§7  into the air§r\n§7• Enhanced knockback§r\n§7  on all hits§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_pickaxe": "Ruby Pickaxe",
+  "item.emeraldmod.ruby_pickaxe.tooltip": "§6Special Effect: Auto-Smelt Ores",
+  "item.emeraldmod.ruby_pickaxe.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Automatically smelts§r\n§7mined ores§r\n§7• Works with Fortune§r\n§7• Mining Speed: §e12.0§r\n§7• Smelts: Iron, Gold,§r\n§7  Copper ores§r\n§7• Ancient Debris →§r\n§7  Netherite Scrap§r\n§7• Grants smelting XP§r\n§7• Disabled with§r\n§7  Silk Touch§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_axe": "Ruby Axe",
+  "item.emeraldmod.ruby_axe.tooltip": "§6Special Effect: Tree Chopper",
+  "item.emeraldmod.ruby_axe.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Chops entire trees§r\n§7at once§r\n§7• Works on all§r\n§7  wood types§r\n§7• Max: 500 logs§r\n§7  per chop§r\n§7• Only affects§r\n§7  natural trees§r\n§7• Searches up to§r\n§7  80 blocks high§r\n§7• Efficient durability§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_shovel": "Ruby Shovel",
+  "item.emeraldmod.ruby_shovel.tooltip": "§6Special Effect: Anti-Gravity",
+  "item.emeraldmod.ruby_shovel.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Prevents sand & gravel§r\n§7from falling§r\n§7• High durability§r\n§7• Fast digging speed§r\n§7• Fire resistant§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_hoe": "Ruby Hoe",
+  "item.emeraldmod.ruby_hoe.tooltip": "§6Special Effect: Auto-Replant",
+  "item.emeraldmod.ruby_hoe.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Right-click mature crops§r\n§7to harvest & replant§r\n§7• Works on: Wheat,§r\n§7  Carrots, Potatoes§r\n§7• Beetroots, Nether§r\n§7  Wart, Cocoa§r\n§7• Sweet Berries,§r\n§7  Melons, Pumpkins§r\n§7• Instant replanting§r\n§7• Grants harvest XP§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_helmet": "Ruby Helmet",
+  "item.emeraldmod.ruby_helmet.tooltip": "§6Special Effect: Water Breathing",
+  "item.emeraldmod.ruby_helmet.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Grants permanent§r\n§7water breathing§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• Protection: §a6§r\n§7• Toughness: §a6.0§r\n§7• Fire resistant item§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_chestplate": "Ruby Chestplate",
+  "item.emeraldmod.ruby_chestplate.tooltip": "§6Special Effect: Dolphin's Grace",
+  "item.emeraldmod.ruby_chestplate.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Grants permanent§r\n§7swimming speed§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• Protection: §a12§r\n§7• Toughness: §a6.0§r\n§7• Fire resistant item§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_leggings": "Ruby Leggings",
+  "item.emeraldmod.ruby_leggings.tooltip": "§6Special Effect: Silent Step",
+  "item.emeraldmod.ruby_leggings.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Silent movement§r\n§7(stealth mode)§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• Protection: §a10§r\n§7• Toughness: §a6.0§r\n§7• Fire resistant item§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_boots": "Ruby Boots",
+  "item.emeraldmod.ruby_boots.tooltip": "§6Special Effect: Powder Snow Walk",
+  "item.emeraldmod.ruby_boots.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Walk on powder snow§r\n§7without sinking§r\n§9Set Bonus:§r\n§7• Fire Immunity§r\n§7  (any piece)§r\n§7• Piglins neutral§r\n§7  (any piece)§r\n§7• Protection: §a6§r\n§7• Toughness: §a6.0§r\n§7• Fire resistant item§r\n§5Superior to all tiers",
+
+  "item.emeraldmod.ruby_horse_armor": "Ruby Horse Armor",
+  "item.emeraldmod.ruby_horse_armor.tooltip": "§6Ultimate horse protection",
+  "item.emeraldmod.ruby_horse_armor.tooltip.shift": "§d✦ UNBREAKABLE ✦§r\n§7Ultimate defense for§r\n§7your horse§r\n§7• Speed Boost (30%)§r\n§7• Regeneration§r\n§7• Fire Resistance§r\n§7• Jump Boost§r\n§7• Resistance§r\n§7• Lava Swimming§r\n§7• Water Swimming§r\n§7• Powder Snow Walk§r\n§5Superior to all tiers",
 
   "item.emeraldmod.emerald_sword": "Emerald Sword",
   "item.emeraldmod.emerald_sword.tooltip": "§6Special Effect: Shockwave Strike",
@@ -47,29 +104,60 @@
   "item.emeraldmod.emerald_upgrade_smithing_template.tooltip": "§6Emerald Upgrade\n§9Ingredients",
   "item.emeraldmod.emerald_upgrade_smithing_template.tooltip.shift": "§7Use in Smithing Table§r\n§7to upgrade diamond gear§r\n§7to emerald tier§r\n§7• Applies to:§r\n§7  §aTools & Armor§r\n§7• Grants special§r\n§7  abilities§r\n§7• Increases durability§r\n§7  & stats",
 
-  "item.emeraldmod.netherite_horse_armor": "Netherite Horse Armor",
-  "item.emeraldmod.netherite_horse_armor.tooltip": "§6Emerald Upgrade\n§9Ingredients",
+  "item.emeraldmod.ruby_upgrade_smithing_template": "§eRuby Upgrade",
+  "item.emeraldmod.ruby_upgrade_smithing_template.description": "§eRuby Upgrade",
+
+  "upgrade_template.emeraldmod.ruby_upgrade.applies_to": "Emerald Equipment",
+  "upgrade_template.emeraldmod.ruby_upgrade.ingredients": "Ruby",
+  "upgrade_template.emeraldmod.ruby_upgrade.base_slot_description": "Add emerald armor, weapon, or tool",
+  "upgrade_template.emeraldmod.ruby_upgrade.additions_slot_description": "Add Ruby",
 
   "upgrade.emeraldmod.emerald_upgrade.applies_to": "Diamond Equipment",
   "upgrade.emeraldmod.emerald_upgrade.ingredients": "Emerald",
   "upgrade.emeraldmod.emerald_upgrade.base_slot_description": "Add diamond armor, weapon, or tool",
   "upgrade.emeraldmod.emerald_upgrade.additions_slot_description": "Add Emerald",
 
-  "effect.emeraldmod.snow_powder_walker": "Snow Walk",
+  "item.emeraldmod.netherite_horse_armor": "Netherite Horse Armor",
+  "item.emeraldmod.netherite_horse_armor.tooltip": "§6Emerald Upgrade\n§9Ingredients",
+
   "effect.emeraldmod.shockwave": "Shockwave",
+  "effect.emeraldmod.lightning_slash": "Lightning Slash",
+
   "effect.emeraldmod.auto_smelt": "Auto Smelt",
+  "effect.emeraldmod.vein_mining": "Vein Mining",
+
   "effect.emeraldmod.tree_chopping": "Tree Chopping",
+  "effect.emeraldmod.auto_place": "Auto Place",
+
   "effect.emeraldmod.anti_gravity": "Anti-Gravity",
+  "effect.emeraldmod.fast_digging": "Fast Digging",
+
   "effect.emeraldmod.auto_replant": "Auto Replant",
+  "effect.emeraldmod.more_harvest": "More Harvest",
+
   "effect.emeraldmod.silent_step": "Silent Step",
+  "effect.emeraldmod.snow_powder_walker": "Snow Walk",
+
   "effect.emeraldmod.swimming_horse": "Water Swimming Horse",
   "effect.emeraldmod.horse_fire": "Horse Fire Resistance",
   "effect.emeraldmod.horse_snow": "Horse Snow Walk",
-  "effect.emeraldmod.horse_lana": "Lava Swimming Horse",
+  "effect.emeraldmod.horse_lava": "Lava Swimming Horse",
+
+  "effect.emeraldmod.negative_immun": "Negative Immunity",
+  "effect.emeraldmod.negative_horse": "Negative Immunity Horse",
+
 
   "key.category.emeraldmod": "Emerald Mod",
   "key.emeraldmod.toggle_tools": "Toggle Tools Effect",
   "key.emeraldmod.toggle_armor": "Toggle Armor Effect",
+
+  "category.emeraldmod.retrofit": "Ruby Ores Retrofit Maximize",
+  "key.emeraldmod.maximize_retrofit": "Toggle Maximize Retrofit",
+  "key.emeraldmod.generate_now": "Toggle Confirm Generate Ruby Ores",
+  "key.emeraldmod.toggle_hide_widget": "Toggle Hide Widgets",
+
+  "trim_material.emeraldmod.ruby": "Ruby Material",
+  "trim_material.emeraldmod.ruby_ingot": "Ruby Ingot Material",
 
   "message.emeraldmod.tools_enabled": "§a✓ Tools Effect: ON",
   "message.emeraldmod.tools_disabled": "§c✗ Tools Effect: OFF",

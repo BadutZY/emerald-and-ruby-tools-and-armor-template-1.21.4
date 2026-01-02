@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ELE",
+    "GDG",
+    "GGG"
+  ],
+  "key": {
+    "G": "minecraft:netherite_ingot",
+    "D": "emeraldmod:ruby_ingot",
+    "L": "emeraldmod:ruby_upgrade_smithing_template",
+    "E": "minecraft:emerald"
+  },
+  "result": {
+    "id": "emeraldmod:ruby_upgrade_smithing_template",
+    "count": 2
+  }
+}

@@ -9,6 +9,16 @@
     "emeraldmod:emerald_pickaxe",
     "emeraldmod:emerald_axe",
     "emeraldmod:emerald_shovel",
-    "emeraldmod:emerald_hoe"
+    "emeraldmod:emerald_hoe",
+
+    "emeraldmod:ruby_helmet",
+    "emeraldmod:ruby_chestplate",
+    "emeraldmod:ruby_leggings",
+    "emeraldmod:ruby_boots",
+    "emeraldmod:ruby_sword",
+    "emeraldmod:ruby_pickaxe",
+    "emeraldmod:ruby_axe",
+    "emeraldmod:ruby_shovel",
+    "emeraldmod:ruby_hoe"
   ]
 }

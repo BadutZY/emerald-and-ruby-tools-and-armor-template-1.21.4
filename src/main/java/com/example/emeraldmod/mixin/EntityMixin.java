@@ -2,6 +2,7 @@ package com.example.emeraldmod.mixin;
 
 import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.EmeraldArmorItem;
+import com.example.emeraldmod.item.RubyArmorItem;
 import com.example.emeraldmod.state.EffectStateManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -16,8 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Mixin to prevent slow movement in powder snow when effect is ON
- * When effect is OFF, allow vanilla slowdown
+ * Prevent powder snow slowdown for Emerald and Ruby boots
  */
 @Mixin(Entity.class)
 public abstract class EntityMixin {
@@ -26,42 +26,29 @@ public abstract class EntityMixin {
     private void preventPowderSnowSlowdown(BlockState state, Vec3d multiplier, CallbackInfo ci) {
         Entity entity = (Entity) (Object) this;
 
-        // Only handle server-side player entities
         if (!(entity instanceof ServerPlayerEntity player)) {
             return;
         }
 
-        // Check if the slow movement is caused by powder snow
         if (state.getBlock() != Blocks.POWDER_SNOW) {
             return;
         }
 
-        // Check if player is wearing emerald boots
+        // ✅ CHECK: Emerald Boots OR Ruby Boots
         ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
-        if (!(boots.getItem() instanceof EmeraldArmorItem)) {
+        if (!(boots.getItem() instanceof EmeraldArmorItem) &&
+                !(boots.getItem() instanceof RubyArmorItem)) {
             return;
         }
 
-        // Check if armor effect is enabled
+        // ✅ CHECK: Armor effect enabled
         EffectStateManager stateManager = EffectStateManager.getServerState(player.getServer());
         boolean armorEnabled = stateManager.isArmorEnabled(player.getUuid());
 
-        // CRITICAL FIX: Only cancel slowdown if effect is ON
         if (armorEnabled) {
-            // Effect ON: Cancel slowdown completely
+            // Effect ON: Cancel slowdown
             ci.cancel();
-
-            if (player.age % 40 == 0) { // Log setiap 2 detik
-                EmeraldMod.LOGGER.debug("Prevented slowdown for {} (effect ON)",
-                        player.getName().getString());
-            }
         }
-        // Effect OFF: Don't cancel, allow vanilla slowdown to occur
-        else {
-            if (player.age % 40 == 0) { // Log setiap 2 detik
-                EmeraldMod.LOGGER.debug("Allowing slowdown for {} (effect OFF)",
-                        player.getName().getString());
-            }
-        }
+        // Effect OFF: Allow vanilla slowdown
     }
 }

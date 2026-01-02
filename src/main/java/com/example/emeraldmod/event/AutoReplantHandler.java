@@ -9,15 +9,14 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.List;
 import java.util.Random;
 
 public class AutoReplantHandler {
@@ -26,141 +25,194 @@ public class AutoReplantHandler {
 
     public static void register() {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            // Cek apakah player menggunakan Emerald Hoe
-            ItemStack heldItem = player.getStackInHand(hand);
-            if (heldItem.getItem() != ModItems.EMERALD_HOE) {
+            // ⭐ CRITICAL FIX: Only process on MAIN_HAND to prevent double processing
+            if (hand != Hand.MAIN_HAND) {
                 return ActionResult.PASS;
             }
 
-            // ✅ CHECK: Apakah tools effect enabled? (Server-side only)
-            if (!world.isClient) {
-                ServerWorld serverWorld = (ServerWorld) world;
-                EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+            ItemStack heldItem = player.getStackInHand(hand);
+            boolean isEmeraldHoe = heldItem.getItem() == ModItems.EMERALD_HOE;
+            boolean isRubyHoe = heldItem.getItem() == ModItems.RUBY_HOE;
 
-                if (!stateManager.isToolsEnabled(player.getUuid())) {
-                    // Tools effect DISABLED, biarkan vanilla behavior
-                    EmeraldMod.LOGGER.debug("Auto-replant disabled for player {}", player.getName().getString());
-                    return ActionResult.PASS;
-                }
+            // Check if using Emerald or Ruby Hoe
+            if (!isEmeraldHoe && !isRubyHoe) {
+                return ActionResult.PASS;
             }
 
-            // Cek apakah di server side
+            // ⭐ CRITICAL FIX: Process ONLY on server side
             if (world.isClient) {
+                // Return SUCCESS to prevent vanilla behavior but don't process
                 return ActionResult.SUCCESS;
             }
 
-            BlockPos pos = hitResult.getBlockPos();
-            BlockState state = world.getBlockState(pos);
-            Block block = state.getBlock();
+            // Check tools effect enabled (server side only)
+            ServerWorld serverWorld = (ServerWorld) world;
+            EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
 
-            // Handle berbagai jenis crops
-            if (handleCropBlock(world, player, pos, state, block, heldItem)) {
-                return ActionResult.SUCCESS;
+            if (!stateManager.isToolsEnabled(player.getUuid())) {
+                return ActionResult.PASS;
+            }
+
+            BlockPos centerPos = hitResult.getBlockPos();
+            BlockState centerState = world.getBlockState(centerPos);
+            Block centerBlock = centerState.getBlock();
+
+            // Ruby Hoe: Process 3x3 area (UNBREAKABLE - NO DURABILITY LOSS)
+            if (isRubyHoe) {
+                boolean processed = handleRubyAreaReplant(serverWorld, player, centerPos, heldItem);
+                return processed ? ActionResult.SUCCESS : ActionResult.PASS;
+            }
+
+            // Emerald Hoe: Process single block only (WITH DURABILITY LOSS)
+            if (isEmeraldHoe) {
+                if (handleEmeraldSingleReplant(serverWorld, player, centerPos, centerState, centerBlock, heldItem)) {
+                    return ActionResult.SUCCESS;
+                }
             }
 
             return ActionResult.PASS;
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Auto-Replant Handler with Fortune Support (Toggleable)");
+        EmeraldMod.LOGGER.info("✅ Registered Auto-Replant Handler (Toggleable)");
+        EmeraldMod.LOGGER.info("  - Emerald Hoe: Single block (1x1) WITH durability loss");
+        EmeraldMod.LOGGER.info("  - Ruby Hoe: Area replant (3x3) UNBREAKABLE");
     }
 
-    private static boolean handleCropBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, Block block, ItemStack hoe) {
-        ServerWorld serverWorld = (ServerWorld) world;
+    /**
+     * ⭐ RUBY HOE: Handle 3x3 area replant WITHOUT durability loss
+     * Ruby tools are UNBREAKABLE so NO damage is applied
+     */
+    private static boolean handleRubyAreaReplant(ServerWorld world, PlayerEntity player, BlockPos centerPos, ItemStack hoe) {
+        int blocksProcessed = 0;
 
-        // Handle CropBlock (Wheat, Carrots, Potatoes, Beetroots)
-        if (block instanceof CropBlock cropBlock) {
-            return handleStandardCrop(serverWorld, player, pos, state, cropBlock, hoe);
+        // Process 3x3 area (center ± 1 block di X dan Z)
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                BlockPos targetPos = centerPos.add(dx, 0, dz);
+                BlockState targetState = world.getBlockState(targetPos);
+                Block targetBlock = targetState.getBlock();
+
+                // Process crop without durability damage
+                if (processCropBlock(world, player, targetPos, targetState, targetBlock, hoe)) {
+                    blocksProcessed++;
+                }
+            }
         }
 
-        // Handle NetherWartBlock
-        if (block instanceof NetherWartBlock) {
-            return handleNetherWart(serverWorld, player, pos, state, hoe);
-        }
+        if (blocksProcessed > 0) {
+            // ⭐ RUBY HOE: NO DURABILITY DAMAGE (Unbreakable)
+            // Ruby hoe durability is managed by RubyToolItem.inventoryTick()
 
-        // Handle StemBlock (Melon & Pumpkin Stems)
-        if (block instanceof StemBlock stemBlock) {
-            return handleStemBlock(serverWorld, player, pos, state, stemBlock, hoe);
-        }
+            EmeraldMod.LOGGER.debug("Ruby Hoe 3x3 replant: {} crops processed at {} (NO durability loss)",
+                    blocksProcessed, centerPos);
 
-        // Handle Melon & Pumpkin Fruits
-        if (block == Blocks.MELON || block == Blocks.PUMPKIN) {
-            return handleGourdBlock(serverWorld, player, pos, state, block, hoe);
-        }
-
-        // Handle Sweet Berry Bush
-        if (block instanceof SweetBerryBushBlock) {
-            return handleSweetBerryBush(serverWorld, player, pos, state, hoe);
-        }
-
-        // Handle Cocoa Block
-        if (block instanceof CocoaBlock) {
-            return handleCocoa(serverWorld, player, pos, state, hoe);
+            return true;
         }
 
         return false;
     }
 
-    private static boolean handleStandardCrop(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, CropBlock crop, ItemStack hoe) {
-        // Cek apakah crop sudah dewasa
-        if (!crop.isMature(state)) {
-            return false;
+    /**
+     * ⭐ EMERALD HOE: Handle single block replant WITH durability loss
+     * Emerald tools have normal durability behavior
+     */
+    private static boolean handleEmeraldSingleReplant(ServerWorld world, PlayerEntity player,
+                                                      BlockPos pos, BlockState state, Block block,
+                                                      ItemStack hoe) {
+        // Process single crop
+        boolean processed = processCropBlock(world, player, pos, state, block, hoe);
+
+        if (processed) {
+            // ⭐ EMERALD HOE: APPLY DURABILITY DAMAGE (Normal behavior)
+            hoe.damage(1, player, player.getPreferredEquipmentSlot(hoe));
+
+            EmeraldMod.LOGGER.debug("Emerald Hoe single replant at {} (durability -1)", pos);
         }
 
-        // Get Fortune level
+        return processed;
+    }
+
+    /**
+     * Process single crop block (shared logic for both hoes)
+     * Returns true if crop was successfully processed
+     */
+    private static boolean processCropBlock(ServerWorld world, PlayerEntity player,
+                                            BlockPos pos, BlockState state, Block block,
+                                            ItemStack hoe) {
+        if (block instanceof CropBlock cropBlock) {
+            return handleStandardCrop(world, player, pos, state, cropBlock, hoe);
+        }
+
+        if (block instanceof NetherWartBlock) {
+            return handleNetherWart(world, player, pos, state, hoe);
+        }
+
+        if (block instanceof StemBlock stemBlock) {
+            return handleStemBlock(world, player, pos, state, stemBlock, hoe);
+        }
+
+        if (block == Blocks.MELON || block == Blocks.PUMPKIN) {
+            return handleGourdBlock(world, player, pos, state, block, hoe);
+        }
+
+        if (block instanceof SweetBerryBushBlock) {
+            return handleSweetBerryBush(world, player, pos, state, hoe);
+        }
+
+        if (block instanceof CocoaBlock) {
+            return handleCocoa(world, player, pos, state, hoe);
+        }
+
+        return false;
+    }
+
+    private static boolean handleStandardCrop(ServerWorld world, PlayerEntity player, BlockPos pos,
+                                              BlockState state, CropBlock crop, ItemStack hoe) {
+        // ✅ CHECK: Hanya process jika MATURE
+        if (!crop.isMature(state)) return false;
+
         int fortuneLevel = EnchantmentHelper.getLevel(
                 world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.FORTUNE),
-                hoe
-        );
+                        .getOrThrow(Enchantments.FORTUNE), hoe);
 
-        // Get base drops
-        List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
+        // Get drops
+        java.util.List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Apply ADDITIONAL Fortune bonus
+        // Apply fortune bonus
         if (fortuneLevel > 0) {
             applyFortuneBonus(drops, fortuneLevel);
         }
 
-        // Drop all items
+        // Drop items
         for (ItemStack drop : drops) {
             Block.dropStack(world, pos, drop);
         }
 
-        // Replant crop (reset to age 0)
+        // Replant dengan age 0
         BlockState newState = crop.getDefaultState();
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
         // Play sound
         world.playSound(null, pos, SoundEvents.BLOCK_CROP_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
 
-        // Damage hoe (respects Unbreaking enchantment automatically)
-        hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
-
         // Add experience
         player.addExperience(fortuneLevel > 0 ? 2 : 1);
 
-        EmeraldMod.LOGGER.debug("Auto-replanted crop at {} (Fortune: {}, Total items: {})",
-                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
-    private static boolean handleNetherWart(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
+    private static boolean handleNetherWart(ServerWorld world, PlayerEntity player, BlockPos pos,
+                                            BlockState state, ItemStack hoe) {
         int age = state.get(NetherWartBlock.AGE);
-        if (age < 3) {
-            return false;
-        }
+        // ✅ CHECK: Hanya process jika MATURE (age 3)
+        if (age < 3) return false;
 
-        // Fortune works on Nether Wart
         int fortuneLevel = EnchantmentHelper.getLevel(
                 world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.FORTUNE),
-                hoe
-        );
+                        .getOrThrow(Enchantments.FORTUNE), hoe);
 
-        // Get drops with Fortune applied
-        List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
+        java.util.List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Apply ADDITIONAL Fortune bonus
         if (fortuneLevel > 0) {
             applyFortuneBonus(drops, fortuneLevel);
         }
@@ -169,25 +221,21 @@ public class AutoReplantHandler {
             Block.dropStack(world, pos, drop);
         }
 
-        // Replant
+        // Replant dengan age 0
         BlockState newState = Blocks.NETHER_WART.getDefaultState();
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
         world.playSound(null, pos, SoundEvents.BLOCK_NETHER_WART_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
-        hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
 
-        EmeraldMod.LOGGER.debug("Auto-replanted nether wart at {} (Fortune: {}, Total items: {})",
-                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
-    private static boolean handleStemBlock(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, StemBlock stem, ItemStack hoe) {
+    private static boolean handleStemBlock(ServerWorld world, PlayerEntity player, BlockPos pos,
+                                           BlockState state, StemBlock stem, ItemStack hoe) {
         int age = state.get(StemBlock.AGE);
-        if (age < 7) {
-            return false;
-        }
+        // ✅ CHECK: Hanya process jika MATURE (age 7)
+        if (age < 7) return false;
 
-        // Check for gourd
         boolean hasGourd = false;
         Block expectedGourd = null;
 
@@ -208,32 +256,26 @@ public class AutoReplantHandler {
             }
         }
 
-        if (hasGourd) {
-            return false;
-        }
+        // Jangan reset jika ada gourd (biarkan tetap mature)
+        if (hasGourd) return false;
 
-        // Reset stem
+        // Reset ke age 0
         BlockState newState = stem.getDefaultState();
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
         world.playSound(null, pos, SoundEvents.BLOCK_STEM_BREAK, SoundCategory.BLOCKS, 1.0f, 1.0f);
-        hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
 
         return true;
     }
 
-    private static boolean handleGourdBlock(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, Block block, ItemStack hoe) {
-        // Get Fortune level
+    private static boolean handleGourdBlock(ServerWorld world, PlayerEntity player, BlockPos pos,
+                                            BlockState state, Block block, ItemStack hoe) {
         int fortuneLevel = EnchantmentHelper.getLevel(
                 world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.FORTUNE),
-                hoe
-        );
+                        .getOrThrow(Enchantments.FORTUNE), hoe);
 
-        // Get drops
-        List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
+        java.util.List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Apply ADDITIONAL Fortune bonus for melons (pumpkins don't benefit from fortune in vanilla)
         if (fortuneLevel > 0 && block == Blocks.MELON) {
             applyFortuneBonus(drops, fortuneLevel);
         }
@@ -250,29 +292,23 @@ public class AutoReplantHandler {
             world.playSound(null, pos, SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 0.8f);
         }
 
-        hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
         player.addExperience(1);
 
         return true;
     }
 
-    private static boolean handleSweetBerryBush(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
+    private static boolean handleSweetBerryBush(ServerWorld world, PlayerEntity player, BlockPos pos,
+                                                BlockState state, ItemStack hoe) {
         int age = state.get(SweetBerryBushBlock.AGE);
-        if (age < 2) {
-            return false;
-        }
+        // ✅ CHECK: Hanya process jika MATURE (age 2+)
+        if (age < 2) return false;
 
-        // Fortune affects sweet berries
         int fortuneLevel = EnchantmentHelper.getLevel(
                 world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.FORTUNE),
-                hoe
-        );
+                        .getOrThrow(Enchantments.FORTUNE), hoe);
 
-        // Get drops
-        List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
+        java.util.List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Apply ADDITIONAL Fortune bonus
         if (fortuneLevel > 0) {
             applyFortuneBonus(drops, fortuneLevel);
         }
@@ -281,36 +317,30 @@ public class AutoReplantHandler {
             Block.dropStack(world, pos, drop);
         }
 
-        // Reset to age 1
+        // Reset ke age 1 (bukan 0, karena berry bush tidak mulai dari 0)
         BlockState newState = state.with(SweetBerryBushBlock.AGE, 1);
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
-        world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES, SoundCategory.BLOCKS, 1.0f, 1.0f);
-        hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
+        world.playSound(null, pos, SoundEvents.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES,
+                SoundCategory.BLOCKS, 1.0f, 1.0f);
+
         player.addExperience(1);
 
-        EmeraldMod.LOGGER.debug("Harvested sweet berries at {} (Fortune: {}, Total items: {})",
-                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
-    private static boolean handleCocoa(ServerWorld world, PlayerEntity player, BlockPos pos, BlockState state, ItemStack hoe) {
+    private static boolean handleCocoa(ServerWorld world, PlayerEntity player, BlockPos pos,
+                                       BlockState state, ItemStack hoe) {
         int age = state.get(CocoaBlock.AGE);
-        if (age < 2) {
-            return false;
-        }
+        // ✅ CHECK: Hanya process jika MATURE (age 2)
+        if (age < 2) return false;
 
-        // Fortune affects cocoa beans
         int fortuneLevel = EnchantmentHelper.getLevel(
                 world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.FORTUNE),
-                hoe
-        );
+                        .getOrThrow(Enchantments.FORTUNE), hoe);
 
-        // Get drops
-        List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
+        java.util.List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, null, player, hoe);
 
-        // Apply ADDITIONAL Fortune bonus
         if (fortuneLevel > 0) {
             applyFortuneBonus(drops, fortuneLevel);
         }
@@ -319,7 +349,7 @@ public class AutoReplantHandler {
             Block.dropStack(world, pos, drop);
         }
 
-        // Replant
+        // Reset ke age 0, preserve facing
         BlockState newState = Blocks.COCOA.getDefaultState()
                 .with(CocoaBlock.AGE, 0)
                 .with(CocoaBlock.FACING, state.get(CocoaBlock.FACING));
@@ -327,39 +357,29 @@ public class AutoReplantHandler {
         world.setBlockState(pos, newState, Block.NOTIFY_ALL);
 
         world.playSound(null, pos, SoundEvents.BLOCK_WOOD_BREAK, SoundCategory.BLOCKS, 1.0f, 1.5f);
-        hoe.damage(1, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
+
         player.addExperience(1);
 
-        EmeraldMod.LOGGER.debug("Auto-replanted cocoa at {} (Fortune: {}, Total items: {})",
-                pos, fortuneLevel, drops.stream().mapToInt(ItemStack::getCount).sum());
         return true;
     }
 
-    /**
-     * Apply ADDITIONAL Fortune bonus to drops
-     * This adds extra items on top of vanilla loot table drops
-     */
-    private static void applyFortuneBonus(List<ItemStack> drops, int fortuneLevel) {
+    private static void applyFortuneBonus(java.util.List<ItemStack> drops, int fortuneLevel) {
         for (ItemStack drop : drops) {
             if (drop.isEmpty()) continue;
 
             int currentCount = drop.getCount();
             int bonusItems = 0;
 
-            // For each item in the stack, chance to get bonus
             for (int i = 0; i < currentCount; i++) {
-                float chance = 0.25f * fortuneLevel; // 25%, 50%, 75%
+                float chance = 0.25f * fortuneLevel;
 
                 if (RANDOM.nextFloat() < chance) {
-                    // Random bonus between 1 and fortuneLevel
                     bonusItems += RANDOM.nextInt(fortuneLevel) + 1;
                 }
             }
 
-            // Add bonus items
             if (bonusItems > 0) {
                 drop.setCount(currentCount + bonusItems);
-                EmeraldMod.LOGGER.debug("Fortune bonus: +{} items (Fortune {})", bonusItems, fortuneLevel);
             }
         }
     }

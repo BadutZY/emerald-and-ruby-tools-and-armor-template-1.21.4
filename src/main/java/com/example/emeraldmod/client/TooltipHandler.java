@@ -22,43 +22,96 @@ public class TooltipHandler {
 
             // HANYA tambahkan tooltip jika item adalah salah satu dari mod items
             if (item == ModItems.EMERALD_SWORD) {
-                // Tambahkan blank line HANYA untuk mod items
                 lines.add(Text.literal(""));
                 addSwordTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_PICKAXE) {
+            } else if (item == ModItems.RUBY_SWORD) {
+                lines.add(Text.literal(""));
+                addSwordRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_PICKAXE) {
                 lines.add(Text.literal(""));
                 addPickaxeTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_AXE) {
+            } else if (item == ModItems.RUBY_PICKAXE) {
+                lines.add(Text.literal(""));
+                addPickaxeRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_AXE) {
                 lines.add(Text.literal(""));
                 addAxeTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_SHOVEL) {
+            } else if (item == ModItems.RUBY_AXE) {
+                lines.add(Text.literal(""));
+                addAxeRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_SHOVEL) {
                 lines.add(Text.literal(""));
                 addShovelTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_HOE) {
+            } else if (item == ModItems.RUBY_SHOVEL) {
+                lines.add(Text.literal(""));
+                addShovelRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_HOE) {
                 lines.add(Text.literal(""));
                 addHoeTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_HELMET) {
+            } else if (item == ModItems.RUBY_HOE) {
+                lines.add(Text.literal(""));
+                addHoeRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_HELMET) {
                 lines.add(Text.literal(""));
                 addHelmetTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_CHESTPLATE) {
+            } else if (item == ModItems.RUBY_HELMET) {
+                lines.add(Text.literal(""));
+                addHelmetRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_CHESTPLATE) {
                 lines.add(Text.literal(""));
                 addChestplateTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_LEGGINGS) {
+            } else if (item == ModItems.RUBY_CHESTPLATE) {
+                lines.add(Text.literal(""));
+                addChestplateRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_LEGGINGS) {
                 lines.add(Text.literal(""));
                 addLeggingsTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_BOOTS) {
+            } else if (item == ModItems.RUBY_LEGGINGS) {
+                lines.add(Text.literal(""));
+                addLeggingsRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_BOOTS) {
                 lines.add(Text.literal(""));
                 addBootsTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_HORSE_ARMOR) {
+            } else if (item == ModItems.RUBY_BOOTS) {
+                lines.add(Text.literal(""));
+                addBootsRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_HORSE_ARMOR) {
                 lines.add(Text.literal(""));
                 addHorseArmorTooltip(lines, shiftPressed);
-            } else if (item == ModItems.EMERALD_UPGRADE_SMITHING_TEMPLATE) {
+            } else if (item == ModItems.RUBY_HORSE_ARMOR) {
+                lines.add(Text.literal(""));
+                addHorseArmorRubyTooltip(lines, shiftPressed);
+            }
+
+            else if (item == ModItems.EMERALD_UPGRADE_SMITHING_TEMPLATE) {
                 lines.add(Text.literal(""));
                 addUpgradeTooltip(lines);
+            } else if (item == ModItems.RUBY_UPGRADE_SMITHING_TEMPLATE) {
+                lines.add(Text.literal(""));
+                addUpgradeRubyTooltip(lines);
             }
         });
     }
 
+    //SWORD
     private static void addSwordTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -73,10 +126,30 @@ public class TooltipHandler {
     private static void addDescriptionSword(List<Text> lines) {
         lines.add(Text.literal(" ").formatted(Formatting.WHITE));
         lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
-        lines.add(Text.literal("Every 3rd hit creates a powerful shockwave").formatted(Formatting.GRAY));
-        lines.add(Text.literal("Launches enemies into the air").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Every 3rd hit creates a powerful Shockwave").formatted(Formatting.GRAY));
     }
 
+    private static void addSwordRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Shockwave").formatted(Formatting.AQUA));
+            lines.add(Text.literal("• Lightning Slash").formatted(Formatting.DARK_AQUA));
+            addDescriptionSwordRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionSwordRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Every 3rd hit creates a powerful Shockwave").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Every 5th hit creates a Lightning Bolt").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //PICKAXE
     private static void addPickaxeTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -94,6 +167,27 @@ public class TooltipHandler {
         lines.add(Text.literal("Smelts automatically when mining ores").formatted(Formatting.GRAY));
     }
 
+    private static void addPickaxeRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Auto Smelt").formatted(Formatting.DARK_RED));
+            lines.add(Text.literal("• Vein Mining").formatted(Formatting.RED));
+            addDescriptionPickaxeRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionPickaxeRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Smelts automatically when mining ores").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Mine the same ore instantly").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //AXE
     private static void addAxeTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -111,6 +205,27 @@ public class TooltipHandler {
         lines.add(Text.literal("Chops entire trees at once").formatted(Formatting.GRAY));
     }
 
+    private static void addAxeRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Tree Chopper").formatted(Formatting.RED));
+            lines.add(Text.literal("• Auto Place").formatted(Formatting.DARK_RED));
+            addDescriptionAxeRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionAxeRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Chops entire trees at once").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Automatically plant one sapling").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //SHOVEL
     private static void addShovelTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -125,10 +240,30 @@ public class TooltipHandler {
     private static void addDescriptionShovel(List<Text> lines) {
         lines.add(Text.literal(" ").formatted(Formatting.WHITE));
         lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
-        lines.add(Text.literal("prevent blocks from falling if the surrounding").formatted(Formatting.GRAY));
-        lines.add(Text.literal("area is destroyed with a shovel").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Prevent the blocks from falling").formatted(Formatting.GRAY));
     }
 
+    private static void addShovelRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Anti-Gravity").formatted(Formatting.DARK_AQUA));
+            lines.add(Text.literal("• Fast Digging").formatted(Formatting.YELLOW));
+            addDescriptionShovelRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionShovelRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Prevent the blocks from falling").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Automatically destroys 3x3 blocks at once").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //HOE
     private static void addHoeTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -146,6 +281,27 @@ public class TooltipHandler {
         lines.add(Text.literal("Right-click mature crops to harvest").formatted(Formatting.GRAY));
     }
 
+    private static void addHoeRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Auto-Replant").formatted(Formatting.DARK_GREEN));
+            lines.add(Text.literal("• More Harvest").formatted(Formatting.GREEN));
+            addDescriptionHoeRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionHoeRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Right-click mature crops to harvest").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Expand harvest to 3x3").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //HELMET
     private static void addHelmetTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -165,6 +321,29 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
     }
 
+    private static void addHelmetRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Water Breathing").formatted(Formatting.AQUA));
+            lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
+            lines.add(Text.literal("• Negative Immunity").formatted(Formatting.DARK_PURPLE));
+            addDescriptionHelmetRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionHelmetRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("- Infinite Water Breathing").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //CHESTPLATE
     private static void addChestplateTooltip(List<Text> lines, boolean shift) {
 
         if (shift)
@@ -184,6 +363,29 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
     }
 
+    private static void addChestplateRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift)
+        {lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Dolphin's Grace").formatted(Formatting.AQUA));
+            lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
+            lines.add(Text.literal("• Negative Immunity").formatted(Formatting.DARK_PURPLE));
+            addDescriptionChestplateRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionChestplateRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("- Speed up swimming").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //LEGGING
     private static void addLeggingsTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -203,6 +405,29 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
     }
 
+    private static void addLeggingsRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Silent Step").formatted(Formatting.DARK_BLUE));
+            lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
+            lines.add(Text.literal("• Negative Immunity").formatted(Formatting.DARK_PURPLE));
+            addDescriptionLeggingsRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionLeggingsRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("- not detected by Sculk Sensor").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //BOOTS
     private static void addBootsTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -222,6 +447,29 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
     }
 
+    private static void addBootsRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Snow Walk").formatted(Formatting.AQUA));
+            lines.add(Text.literal("• Fire Resistance").formatted(Formatting.DARK_RED));
+            lines.add(Text.literal("• Negative Immunity").formatted(Formatting.DARK_PURPLE));
+            addDescriptionBootsRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionBootsRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("- Walk on powder snow without sinking").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //HORSE ARMOR
     private static void addHorseArmorTooltip(List<Text> lines, boolean shift) {
 
         if (shift) {
@@ -247,6 +495,35 @@ public class TooltipHandler {
         lines.add(Text.literal("- Horses can swim").formatted(Formatting.GRAY));
     }
 
+    private static void addHorseArmorRubyTooltip(List<Text> lines, boolean shift) {
+
+        if (shift) {
+            lines.add(Text.literal("Special Effect: ").formatted(Formatting.GOLD));
+            lines.add(Text.literal("• Speed").formatted(Formatting.AQUA));
+            lines.add(Text.literal("• Regeneration").formatted(Formatting.RED));
+            lines.add(Text.literal("• Jump Boost").formatted(Formatting.BLUE));
+            lines.add(Text.literal("• Swimming Horse").formatted(Formatting.WHITE));
+            lines.add(Text.literal("• Resistant").formatted(Formatting.GRAY));
+            lines.add(Text.literal("• Negative Immunity").formatted(Formatting.DARK_PURPLE));
+            addDescriptionHorseArmorRuby(lines);
+        } else {
+            addShiftHint(lines);
+        }
+    }
+
+    private static void addDescriptionHorseArmorRuby(List<Text> lines) {
+        lines.add(Text.literal(" ").formatted(Formatting.WHITE));
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("- Increase speed").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Healing").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Increase Jump").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Reduces incoming damage").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Horses can swim").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
+        lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+    }
+
+    //UPGRADE SMITHING TEMPLATE
     private static void addUpgradeTooltip(List<Text> lines) {
         lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
         lines.add(Text.literal("Upgrade netherite gear to").formatted(Formatting.GRAY));
@@ -256,6 +533,17 @@ public class TooltipHandler {
         lines.add(Text.literal(" Netherite Equipment").formatted(Formatting.BLUE));
         lines.add(Text.literal("Ingredients:").formatted(Formatting.GRAY));
         lines.add(Text.literal(" Emerald").formatted(Formatting.BLUE));
+    }
+
+    private static void addUpgradeRubyTooltip(List<Text> lines) {
+        lines.add(Text.literal("Description:").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Upgrade emerald gear to").formatted(Formatting.GRAY));
+        lines.add(Text.literal("ruby tier").formatted(Formatting.GRAY));
+        lines.add(Text.literal("  ").formatted(Formatting.GRAY));
+        lines.add(Text.literal("Applies to:").formatted(Formatting.GRAY));
+        lines.add(Text.literal(" Emerald Equipment").formatted(Formatting.BLUE));
+        lines.add(Text.literal("Ingredients:").formatted(Formatting.GRAY));
+        lines.add(Text.literal(" Ruby").formatted(Formatting.BLUE));
     }
 
     private static void addShiftHint(List<Text> lines) {
@@ -268,7 +556,6 @@ public class TooltipHandler {
     }
 
     private static boolean isShiftPressed() {
-        // Cek apakah Left Shift atau Right Shift ditekan
         long window = net.minecraft.client.MinecraftClient.getInstance().getWindow().getHandle();
         return GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS ||
                 GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;

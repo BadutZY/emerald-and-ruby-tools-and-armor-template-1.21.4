@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "emeraldmod",
-	"version": "1.0.1",
-	"name": "Emerald Tools and Armors",
-	"description": "Make Emerald usable as Tools and Armor",
+	"id": "emerald-ruby-mod",
+	"version": "1.1.0",
+	"name": "Emerald & Ruby Tools and Armors",
+	"description": "Make Emerald & Ruby usable as Tools and Armor",
 	"authors": [
 		"BadutZY"
 	],

@@ -1,214 +1,560 @@
 package com.example.emeraldmod;
 
+import com.example.emeraldmod.block.ModBlocks;
+import com.example.emeraldmod.command.RetrofitCommand;
 import com.example.emeraldmod.effect.ModEffects;
 import com.example.emeraldmod.event.*;
 import com.example.emeraldmod.item.ModItemGroups;
 import com.example.emeraldmod.item.ModItems;
 import com.example.emeraldmod.network.ServerPacketHandler;
 import com.example.emeraldmod.network.ToggleEffectPacket;
+import com.example.emeraldmod.world.gen.InstantRetrofitSystem;
+import com.example.emeraldmod.world.gen.ModWorldGeneration;
+import com.example.emeraldmod.world.gen.OreRetrofitState;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-
+/**
+ * Main mod class untuk Emerald & Ruby Mod
+ * ✨ COMPLETE VERSION dengan Resume Support
+ */
 public class EmeraldMod implements ModInitializer {
     public static final String MOD_ID = "emeraldmod";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    private static boolean retrofitCheckDone = false;
+
     @Override
     public void onInitialize() {
         LOGGER.info("========================================");
-        LOGGER.info("Initializing Emerald Tools & Armor Mod");
+        LOGGER.info("Initializing Emerald & Ruby Mod");
         LOGGER.info("========================================");
 
-        debugResourceLoading();
-        debugArmorModels();
-        debugTextures();
+        // ============================================
+        // PHASE 1: NETWORK PACKETS
+        // ============================================
+        registerNetworkPackets();
 
-        // Register network packets FIRST
-        ToggleEffectPacket.register();
-        ServerPacketHandler.register();
-        LOGGER.info("✓ Registered Network Packets for Toggle System");
+        // ============================================
+        // PHASE 2: GAME CONTENT
+        // ============================================
+        registerGameContent();
 
-        // Register custom effects FIRST (sebelum handler)
+        // ============================================
+        // PHASE 3: WORLD GENERATION
+        // ============================================
+        registerWorldGeneration();
+
+        // ============================================
+        // PHASE 4: RETROFIT SYSTEM (WITH SCANNING & RESUME)
+        // ============================================
+        registerRetrofitSystem();
+
+        // ============================================
+        // PHASE 5: GAMEPLAY HANDLERS
+        // ============================================
+        registerGameplayHandlers();
+
+        // ============================================
+        // PHASE 6: FINALIZATION
+        // ============================================
+        logInitializationComplete();
+    }
+
+    /**
+     * PHASE 1: Register all network packets
+     */
+    private void registerNetworkPackets() {
+        LOGGER.info("--- Phase 1: Network Packets ---");
+
+        // Toggle effect packets
+        try {
+            ToggleEffectPacket.register();
+            LOGGER.info("✅ Registered Toggle Effect Packet");
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Toggle Effect Packet already registered, skipping");
+        }
+
+        // Server packet handler
+        try {
+            ServerPacketHandler.register();
+            LOGGER.info("✅ Registered Server Packet Handler");
+        } catch (Exception e) {
+            LOGGER.warn("Server Packet Handler already registered, skipping");
+        }
+
+        // Scanning packets
+        com.example.emeraldmod.network.ScanningPackets.registerServer();
+        LOGGER.info("✅ Registered Scanning Packets");
+
+        // Retrofit packets
+        com.example.emeraldmod.network.RetrofitPackets.registerServer();
+        LOGGER.info("✅ Registered Retrofit Network Packets");
+
+        // Decision packets
+        com.example.emeraldmod.network.RetrofitDecisionPacket.registerServer();
+        LOGGER.info("✅ Registered Retrofit Decision Packets");
+    }
+
+    /**
+     * PHASE 2: Register game content (effects, blocks, items)
+     */
+    private void registerGameContent() {
+        LOGGER.info("--- Phase 2: Game Content ---");
+
+        // Custom effects
         ModEffects.registerModEffects();
+        LOGGER.info("✅ Registered Custom Effects");
 
-        // PENTING: Register items SEBELUM item groups
-        // Ini akan initialize materials dan register semua items
+        // Blocks (must be before items)
+        ModBlocks.registerModBlocks();
+        LOGGER.info("✅ Registered Blocks");
+
+        // Items (must be after blocks)
         ModItems.registerModItems();
+        LOGGER.info("✅ Registered Items");
 
-        // Register item groups SETELAH items
+        // Item groups (must be after items)
         ModItemGroups.registerItemGroups();
+        LOGGER.info("✅ Registered Item Groups");
+    }
 
-        // Register armor effects handler (with toggle support)
-        ArmorEffectsHandler.register();
-        LOGGER.info("✓ Registered Emerald Armor Effects Handler (Toggle: ON/OFF)");
+    /**
+     * PHASE 3: Register world generation
+     */
+    private void registerWorldGeneration() {
+        LOGGER.info("--- Phase 3: World Generation ---");
 
-        // Register horse armor effects handler (always active)
-        HorseArmorEffectsHandler.register();
-        LOGGER.info("✓ Registered Emerald Horse Armor Effects Handler (Always Active)");
+        ModWorldGeneration.generateModWorldGen();
+        LOGGER.info("✅ Registered Ruby Ore World Generation");
+    }
 
-        // Register tool effects handler (with toggle support)
-        ToolEffectsHandler.register();
-        LOGGER.info("✓ Registered Emerald Tool Effects Handler (Toggle: ON/OFF)");
+    /**
+     * 🔧 PHASE 4: Register retrofit system with SCANNING & RESUME
+     *
+     * Enhanced Flow:
+     * 1. Player joins → Check for resume OR start scanning
+     * 2. If can resume → Auto-resume from last checkpoint
+     * 3. If new world → Scan for ruby ores
+     * 4. Show appropriate screen based on state
+     */
+    private void registerRetrofitSystem() {
+        LOGGER.info("--- Phase 4: Retrofit System (With Scanning & Resume) ---");
 
-        // Register damage prevention handler (with toggle check)
-        DamagePreventionHandler.register();
-        LOGGER.info("✓ Registered Fire Damage Prevention Handler (Toggleable)");
+        // 🔧 Player disconnect event - CLEANUP STATE
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            String playerName = handler.player.getName().getString();
+            String worldName = server.getSaveProperties().getLevelName();
 
-        // Register auto-smelt handler for pickaxe (with toggle check)
-        AutoSmeltHandler.register();
-        LOGGER.info("✓ Registered Auto-Smelt Handler for Emerald Pickaxe (Toggleable)");
+            LOGGER.info("[Retrofit] Player {} disconnected from world '{}'", playerName, worldName);
 
-        // Register tree chopping handler for axe (with toggle check)
-        TreeChoppingHandler.register();
-        LOGGER.info("✓ Registered Tree Chopping Handler for Emerald Axe (Toggleable)");
-
-        // Register auto-replant handler for hoe (with toggle check)
-        AutoReplantHandler.register();
-        LOGGER.info("✓ Registered Auto-Replant Handler for Emerald Hoe (Toggleable)");
-
-        // Register shockwave handler for sword (with toggle check)
-        SwordShockwaveHandler.register();
-        LOGGER.info("✓ Registered Shockwave Handler for Emerald Sword (Toggleable)");
-
-        // Register anti-gravity handler for shovel (with toggle check)
-        AntiGravityHandler.register();
-        LOGGER.info("✓ Registered Anti-Gravity Handler for Emerald Shovel (Toggleable)");
-
-        // FIXED: Register ONLY PowderSnowHandler (yang sudah include sink logic)
-        PowderSnowHandler.register();
-        LOGGER.info("✓ Registered Powder Snow Handler (Walk on top when ON, Sink when OFF)");
-
-        // Register server tick event untuk Anti-Gravity handler
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            AntiGravityHandler.tick(world);
+            // Check if retrofit is running untuk world ini
+            if (InstantRetrofitSystem.isRetrofitRunning(worldName)) {
+                LOGGER.info("[Retrofit] ⚠️ Player left during retrofit - keeping retrofit running");
+                // Don't cancel - biarkan retrofit selesai
+            }
         });
-        LOGGER.info("✓ Registered Server Tick Event for Anti-Gravity");
+
+        // ✨ ENHANCED: Player join event - Check for RESUME or start scanning
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            String playerName = handler.player.getName().getString();
+            String worldName = server.getSaveProperties().getLevelName();
+
+            LOGGER.info("[Retrofit] Player {} joined world '{}'", playerName, worldName);
+
+            // ✨ NEW: Check if can resume retrofit
+            ServerWorld overworld = server.getWorld(World.OVERWORLD);
+            ServerWorld nether = server.getWorld(World.NETHER);
+
+            boolean canResumeOverworld = false;
+            boolean canResumeNether = false;
+
+            if (overworld != null) {
+                OreRetrofitState state = OreRetrofitState.get(server, overworld);
+                canResumeOverworld = state.canResume();
+
+                if (canResumeOverworld) {
+                    LOGGER.info("[Retrofit] 🔄 Overworld can resume: {}", state.getResumeInfo());
+                }
+            }
+
+            if (nether != null) {
+                OreRetrofitState state = OreRetrofitState.get(server, nether);
+                canResumeNether = state.canResume();
+
+                if (canResumeNether) {
+                    LOGGER.info("[Retrofit] 🔄 Nether can resume: {}", state.getResumeInfo());
+                }
+            }
+
+            // 🔧 CHECK 1: Retrofit currently running
+            if (InstantRetrofitSystem.isRetrofitRunning(worldName)) {
+                LOGGER.info("[Retrofit] ⚡ World '{}' is currently retrofitting - showing loading screen", worldName);
+
+                // Show loading screen langsung (skip scanning)
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1500);
+                        server.execute(() -> {
+                            com.example.emeraldmod.network.RetrofitPackets.sendShowLoading(handler.player, worldName);
+                        });
+                    } catch (InterruptedException e) {
+                        LOGGER.error("[Retrofit] Interrupted", e);
+                    }
+                }, "ShowLoading-" + playerName).start();
+
+                return; // Skip scanning and resume check
+            }
+
+            // ✨ CHECK 2: Can resume? Auto-resume!
+            if (canResumeOverworld || canResumeNether) {
+                LOGGER.info("[Retrofit] 🔄 Auto-resuming retrofit for world '{}'", worldName);
+
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1500);
+
+                        server.execute(() -> {
+                            // Start resume directly
+                            boolean started = InstantRetrofitSystem.runInitialRetrofit(server);
+
+                            if (started) {
+                                LOGGER.info("[Retrofit] ✅ Resume started successfully");
+                            } else {
+                                LOGGER.warn("[Retrofit] ❌ Failed to resume retrofit");
+                            }
+                        });
+                    } catch (InterruptedException e) {
+                        LOGGER.error("[Retrofit] Interrupted during resume", e);
+                    }
+                }, "AutoResume-" + playerName).start();
+
+                return; // Skip scanning - directly resume
+            }
+
+            // 🔧 CHECK 3: Normal flow - start scanning
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1500);
+
+                    server.execute(() -> {
+                        startScanningProcess(server, handler.player);
+                    });
+                } catch (InterruptedException e) {
+                    LOGGER.error("[Retrofit] Interrupted during join", e);
+                }
+            }, "ScanStart-" + playerName).start();
+        });
+
+        // Server started event - Check status only
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            synchronized (EmeraldMod.class) {
+                if (retrofitCheckDone) {
+                    LOGGER.info("[Retrofit] Server start check already done");
+                    return;
+                }
+                retrofitCheckDone = true;
+            }
+
+            String worldName = server.getSaveProperties().getLevelName();
+
+            LOGGER.info("========================================");
+            LOGGER.info("[Retrofit] Server Started");
+            LOGGER.info("[Retrofit] World: {}", worldName);
+            LOGGER.info("========================================");
+
+            ServerWorld overworld = server.getWorld(World.OVERWORLD);
+            if (overworld == null) {
+                LOGGER.warn("[Retrofit] Overworld not found!");
+                return;
+            }
+
+            OreRetrofitState state = OreRetrofitState.get(server, overworld);
+
+            if (state.isComplete()) {
+                LOGGER.info("[Retrofit] ✅ Already complete for world '{}'", worldName);
+            } else if (state.isInProgress()) {
+                LOGGER.info("[Retrofit] ⏳ In progress for world '{}' ({} chunks done)",
+                        worldName, state.getRetrofittedChunkCount());
+
+                // ✨ Log resume info
+                if (state.canResume()) {
+                    LOGGER.info("[Retrofit] 🔄 {}", state.getResumeInfo());
+                }
+            } else {
+                LOGGER.info("[Retrofit] ⏳ Not started for world '{}'", worldName);
+                LOGGER.info("[Retrofit] Will scan on player join");
+            }
+
+            LOGGER.info("========================================");
+        });
+
+        // 🔧 Server stopping event - CANCEL ALL RETROFITS
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            String worldName = server.getSaveProperties().getLevelName();
+
+            LOGGER.info("[Retrofit] Server stopping - cleaning up world '{}'", worldName);
+
+            // Cancel retrofit jika masih running
+            if (InstantRetrofitSystem.isRetrofitRunning(worldName)) {
+                LOGGER.info("[Retrofit] Cancelling active retrofit for world '{}'", worldName);
+                InstantRetrofitSystem.cancelRetrofit(worldName);
+            }
+        });
+
+        // Register retrofit commands
+        CommandRegistrationCallback.EVENT.register(RetrofitCommand::register);
+
+        LOGGER.info("✅ Registered Retrofit System (With Scanning & Resume)");
+        LOGGER.info("  → Shows scanning screen for new worlds");
+        LOGGER.info("  → Auto-detects existing ores");
+        LOGGER.info("  → Auto-resumes from last checkpoint");
+        LOGGER.info("  → Per-world independent progress");
+    }
+
+    /**
+     * 🔧 Start scanning process dengan proper world checking
+     */
+    private void startScanningProcess(MinecraftServer server, ServerPlayerEntity player) {
+        ServerWorld overworld = server.getWorld(World.OVERWORLD);
+        if (overworld == null) {
+            LOGGER.warn("[Scanning] Overworld not found!");
+            return;
+        }
+
+        String worldName = server.getSaveProperties().getLevelName();
+        String playerName = player.getName().getString();
 
         LOGGER.info("========================================");
-        LOGGER.info("Emerald Tools & Armor Mod initialized!");
+        LOGGER.info("[Scanning] 🔍 Starting scan for world '{}'", worldName);
+        LOGGER.info("[Scanning] Player: {}", playerName);
+        LOGGER.info("========================================");
+
+        OreRetrofitState overworldState = OreRetrofitState.get(server, overworld);
+
+        // STEP 1: Check if already complete (skip scanning)
+        if (overworldState.isComplete()) {
+            LOGGER.info("[Scanning] ✅ World '{}' already COMPLETE - no scanning needed", worldName);
+            return;
+        }
+
+        // 🔧 STEP 2: Check if retrofit currently running UNTUK WORLD INI
+        boolean isThisWorldRetrofitting = InstantRetrofitSystem.isRetrofitRunning(worldName);
+
+        if (isThisWorldRetrofitting) {
+            LOGGER.info("[Scanning] ⚡ Retrofit RUNNING for world '{}' - showing loading screen", worldName);
+
+            new Thread(() -> {
+                try {
+                    Thread.sleep(500);
+                    server.execute(() -> {
+                        com.example.emeraldmod.network.RetrofitPackets.sendShowLoading(player, worldName);
+                    });
+                } catch (InterruptedException e) {
+                    LOGGER.error("[Scanning] Interrupted", e);
+                }
+            }, "ShowLoading-" + playerName).start();
+
+            return;
+        }
+
+        // STEP 3: Start scanning process
+        LOGGER.info("[Scanning] 🔍 Starting ore detection scan...");
+
+        // Send scanning screen to player
+        com.example.emeraldmod.network.ScanningPackets.sendStartScan(player, worldName);
+
+        // Run scan in background
+        new Thread(() -> {
+            try {
+                // Update status: Initializing
+                Thread.sleep(500);
+                server.execute(() -> {
+                    com.example.emeraldmod.network.ScanningPackets.sendScanStatus(
+                            player, worldName, "Initializing scanner"
+                    );
+                });
+
+                // Update status: Scanning
+                Thread.sleep(500);
+                server.execute(() -> {
+                    com.example.emeraldmod.network.ScanningPackets.sendScanStatus(
+                            player, worldName, "Scanning world chunks"
+                    );
+                });
+
+                // Perform actual scan
+                Thread.sleep(500);
+                boolean hasOres = com.example.emeraldmod.world.gen.WorldOreDetector.worldHasRubyOres(
+                        server, overworld
+                );
+
+                // Update status: Analyzing
+                server.execute(() -> {
+                    com.example.emeraldmod.network.ScanningPackets.sendScanStatus(
+                            player, worldName, "Analyzing results"
+                    );
+                });
+
+                Thread.sleep(500);
+
+                // Send result
+                final boolean finalHasOres = hasOres;
+                server.execute(() -> {
+                    if (finalHasOres) {
+                        LOGGER.info("[Scanning] ✅ Found Ruby Ores in world '{}'", worldName);
+
+                        // Mark as complete
+                        overworldState.setComplete(true);
+
+                        // Also mark nether
+                        ServerWorld nether = server.getWorld(World.NETHER);
+                        if (nether != null) {
+                            OreRetrofitState netherState = OreRetrofitState.get(server, nether);
+                            netherState.setComplete(true);
+                        }
+
+                        // Send success to client
+                        com.example.emeraldmod.network.ScanningPackets.sendScanComplete(
+                                player, worldName, true
+                        );
+                    } else {
+                        LOGGER.info("[Scanning] ❌ No Ruby Ores found in world '{}'", worldName);
+
+                        // Send failure to client (will show confirmation)
+                        com.example.emeraldmod.network.ScanningPackets.sendScanComplete(
+                                player, worldName, false
+                        );
+                    }
+                });
+
+            } catch (InterruptedException e) {
+                LOGGER.error("[Scanning] Scan interrupted", e);
+            }
+        }, "OreScan-" + playerName).start();
+    }
+
+    /**
+     * PHASE 5: Register gameplay handlers
+     */
+    private void registerGameplayHandlers() {
+        LOGGER.info("--- Phase 5: Gameplay Handlers ---");
+
+        // Armor effects
+        ArmorEffectsHandler.register();
+        LOGGER.info("✅ Armor Effects Handler");
+
+        // Horse armor effects
+        HorseArmorEffectsHandler.register();
+        LOGGER.info("✅ Horse Armor Effects Handler");
+
+        // Tool effects
+        ToolEffectsHandler.register();
+        LOGGER.info("✅ Tool Effects Handler");
+
+        // Fire damage prevention
+        DamagePreventionHandler.register();
+        LOGGER.info("✅ Fire Damage Prevention Handler");
+
+        // Auto-smelt (Pickaxe)
+        AutoSmeltHandler.register();
+        LOGGER.info("✅ Auto-Smelt Handler");
+
+        // Tree chopping (Axe)
+        TreeChoppingHandler.register();
+        LOGGER.info("✅ Tree Chopping Handler");
+
+        // Auto-replant (Hoe)
+        AutoReplantHandler.register();
+        LOGGER.info("✅ Auto-Replant Handler");
+
+        // Shockwave (Sword)
+        SwordShockwaveHandler.register();
+        LOGGER.info("✅ Shockwave Handler");
+
+        // Anti-gravity (Shovel)
+        AntiGravityHandler.register();
+        LOGGER.info("✅ Anti-Gravity Handler");
+
+        // Powder snow handler
+        PowderSnowHandler.register();
+        LOGGER.info("✅ Powder Snow Handler");
+
+        // Server tick for anti-gravity
+        ServerTickEvents.END_WORLD_TICK.register(AntiGravityHandler::tick);
+        LOGGER.info("✅ Server Tick Events");
+    }
+
+    /**
+     * PHASE 6: Log initialization complete with feature summary
+     */
+    private void logInitializationComplete() {
+        LOGGER.info("========================================");
+        LOGGER.info("Emerald & Ruby Mod Initialized!");
+        LOGGER.info("========================================");
         LOGGER.info("");
+
+        // Keybind controls
         LOGGER.info("🎮 KEYBIND CONTROLS:");
-        LOGGER.info("  - Toggle Tools Effect: V (default)");
-        LOGGER.info("  - Toggle Armor Effect: B (default)");
-        LOGGER.info("  - Customize in: Options → Controls → Emerald Mod");
+        LOGGER.info("  - Toggle Tools: V (default)");
+        LOGGER.info("  - Toggle Armor: B (default)");
+        LOGGER.info("  - Maximize Retrofit: M (default)");
+        LOGGER.info("  - Generate Now: N (default)");
+        LOGGER.info("  - Customize in: Options → Controls");
         LOGGER.info("");
-        LOGGER.info("All Protection Features Active:");
+
+        // Ruby features
+        LOGGER.info("💎 RUBY FEATURES:");
+        LOGGER.info("  - UNBREAKABLE Tools & Armor");
+        LOGGER.info("  - Mining Speed: 12.0 (Fastest)");
+        LOGGER.info("  - Attack Damage: 6.0 (Strongest)");
+        LOGGER.info("  - Enchantability: 15 (Best)");
+        LOGGER.info("  - Toughness: 6.0 (Highest)");
+        LOGGER.info("");
+
+        // Scanning & Retrofit system
+        LOGGER.info("🔍 SCANNING & RETROFIT SYSTEM:");
+        LOGGER.info("  - 🔍 Auto-scan on world join");
+        LOGGER.info("  - ✅ Detects existing ruby ores");
+        LOGGER.info("  - 🔄 Auto-resumes from checkpoint");
+        LOGGER.info("  - 💾 Saves progress per-world");
+        LOGGER.info("  - 💬 Confirmation dialog if needed");
+        LOGGER.info("  - 📦 Processes all chunks");
+        LOGGER.info("  - ⏱️ Takes 2-10 minutes");
+        LOGGER.info("  - 🎮 Can minimize and play");
+        LOGGER.info("  - 🌍 Per-world independent");
+        LOGGER.info("");
+
+        // Armor features
+        LOGGER.info("🛡️ ARMOR FEATURES:");
         LOGGER.info("  - Water Breathing (Helmet)");
         LOGGER.info("  - Dolphin's Grace (Chestplate)");
         LOGGER.info("  - Fire Immunity (All Armor)");
-        LOGGER.info("  - Snow Powder Walker (Boots) - TOGGLEABLE");
-        LOGGER.info("  - Piglin Neutral (All Armor) - MEMORY CONTROLLED");
-        LOGGER.info("  - Silent Step (Leggings) - STEALTH MODE");
-        LOGGER.info("  - ENCHANTABILITY: 10 (Same as Diamond)");
-        LOGGER.info("  - ENCHANTMENT SUPPORT: ENABLED");
+        LOGGER.info("  - Powder Snow Walker (Boots)");
+        LOGGER.info("  - Piglin Neutral (All Armor)");
+        LOGGER.info("  - Silent Step (Leggings)");
         LOGGER.info("");
-        LOGGER.info("All Tool Features Active:");
-        LOGGER.info("  - Shockwave Strike (Sword) - EVERY 3RD HIT + ICON");
-        LOGGER.info("  - Auto-Smelt Ores (Pickaxe) - WITH FORTUNE + ICON");
-        LOGGER.info("  - Tree Chopping (Axe) - ONE CHOP ALL LOGS + ICON");
-        LOGGER.info("  - Anti-Gravity (Shovel) - PREVENT FALLING BLOCKS + ICON");
-        LOGGER.info("  - Auto-Replant (Hoe) - RIGHT CLICK CROPS + ICON");
+
+        // Tool features
+        LOGGER.info("⚔️ TOOL FEATURES:");
+        LOGGER.info("  - Shockwave (Sword - 3rd hit)");
+        LOGGER.info("  - Auto-Smelt (Pickaxe)");
+        LOGGER.info("  - Tree Chopping (Axe)");
+        LOGGER.info("  - Anti-Gravity (Shovel)");
+        LOGGER.info("  - Auto-Replant (Hoe)");
         LOGGER.info("");
-        LOGGER.info("Horse Armor Features Active (Always ON):");
-        LOGGER.info("  - Speed Boost (30% faster movement)");
-        LOGGER.info("  - Regeneration (Health regen)");
-        LOGGER.info("  - Fire Resistance (Immune to fire)");
-        LOGGER.info("  - Lava Swimming (Can swim in lava)");
-        LOGGER.info("  - Water Swimming (Can swim in water)");
-        LOGGER.info("  - Jump Boost (Higher jumps)");
-        LOGGER.info("  - Resistance (Reduced damage)");
-        LOGGER.info("  - Powder Snow Walker (Walk on powder snow)");
+
         LOGGER.info("========================================");
-    }
-
-    private void debugArmorModels() {
-        LOGGER.info("--- Armor Model JSON Debug ---");
-
-        String[] armorModels = {
-                "assets/emeraldmod/models/item/emerald_helmet.json",
-                "assets/emeraldmod/models/item/emerald_chestplate.json",
-                "assets/emeraldmod/models/item/emerald_leggings.json",
-                "assets/emeraldmod/models/item/emerald_boots.json"
-        };
-
-        for (String path : armorModels) {
-            testResource(path);
-        }
-
-        LOGGER.info("--- End Armor Model Debug ---");
-    }
-
-    private void debugTextures() {
-        LOGGER.info("--- Armor Texture Debug ---");
-
-        String[] armorTextures = {
-                "assets/emeraldmod/textures/item/emerald_helmet.png",
-                "assets/emeraldmod/textures/item/emerald_chestplate.png",
-                "assets/emeraldmod/textures/item/emerald_leggings.png",
-                "assets/emeraldmod/textures/item/emerald_boots.png"
-        };
-
-        for (String path : armorTextures) {
-            testResource(path);
-        }
-
-        LOGGER.info("--- End Armor Texture Debug ---");
-    }
-
-    private void debugResourceLoading() {
-        LOGGER.info("--- Resource Loading Debug ---");
-
-        // Test equipment asset
-        String equipmentPath = "assets/emeraldmod/equipment/emerald.json";
-        testResource(equipmentPath);
-
-        try {
-            LOGGER.info("Listing all 'emeraldmod' resources...");
-            ClassLoader classLoader = getClass().getClassLoader();
-            Enumeration<URL> resources = classLoader.getResources("assets/emeraldmod/");
-
-            int count = 0;
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                LOGGER.info("Found resource directory: " + url);
-                count++;
-            }
-
-            if (count == 0) {
-                LOGGER.error("!!! NO EMERALDMOD RESOURCES FOUND !!!");
-                LOGGER.error("This means the assets folder is not being loaded!");
-            } else {
-                LOGGER.info("Total resource directories found: " + count);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Error listing resources", e);
-        }
-
-        LOGGER.info("--- End Resource Debug ---");
-    }
-
-    private void testResource(String path) {
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            InputStream stream = classLoader.getResourceAsStream(path);
-
-            if (stream != null) {
-                int size = stream.available();
-                LOGGER.info("✓ FOUND: " + path + " (Size: " + size + " bytes)");
-                stream.close();
-            } else {
-                LOGGER.error("✗ NOT FOUND: " + path);
-                LOGGER.error("  -> Make sure this file exists in src/main/resources/" + path);
-            }
-        } catch (Exception e) {
-            LOGGER.error("✗ ERROR checking " + path + ": " + e.getMessage());
-        }
+        LOGGER.info("Ready to play! 🎮");
+        LOGGER.info("========================================");
     }
 }

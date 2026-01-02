@@ -5,79 +5,93 @@
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/quartz_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/quartz_trim"
         },
         "when": "minecraft:quartz"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/iron_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/iron_trim"
         },
         "when": "minecraft:iron"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/netherite_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/netherite_trim"
         },
         "when": "minecraft:netherite"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/redstone_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/redstone_trim"
         },
         "when": "minecraft:redstone"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/copper_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/copper_trim"
         },
         "when": "minecraft:copper"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/gold_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/gold_trim"
         },
         "when": "minecraft:gold"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/emerald_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/emerald_trim"
         },
         "when": "minecraft:emerald"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/diamond_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/diamond_trim"
         },
         "when": "minecraft:diamond"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/lapis_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/lapis_trim"
         },
         "when": "minecraft:lapis"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/amethyst_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/amethyst_trim"
         },
         "when": "minecraft:amethyst"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/chestplate/resin_trim"
+          "model": "emeraldmod:item/trims/emerald/chestplate/resin_trim"
         },
         "when": "minecraft:resin"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/emerald/chestplate/ruby_trim"
+        },
+        "when": "emeraldmod:ruby"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/emerald/chestplate/ruby_trim"
+        },
+        "when": "emeraldmod:ruby_ingot"
       }
     ],
     "fallback": {

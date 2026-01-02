@@ -1,0 +1,9 @@
+{
+  "asset_name": "ruby_ingot",
+  "description": {
+    "color": "#B03FE0",
+    "translate": "trim_material.emeraldmod.ruby"
+  },
+  "ingredient": "emeraldmod:ruby",
+  "item_model_index": 1.0
+}

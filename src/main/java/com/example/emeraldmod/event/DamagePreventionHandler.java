@@ -2,6 +2,8 @@ package com.example.emeraldmod.event;
 
 import com.example.emeraldmod.EmeraldMod;
 import com.example.emeraldmod.item.EmeraldArmorItem;
+import com.example.emeraldmod.item.RubyArmorItem;
+import com.example.emeraldmod.item.ModItems;
 import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.entity.damage.DamageSource;
@@ -15,24 +17,20 @@ public class DamagePreventionHandler {
 
     public static void register() {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-            // Cek jika entity adalah player
             if (entity instanceof ServerPlayerEntity player) {
-                // ✅ CHECK: Apakah armor effect enabled?
+                // ✅ CHECK: Armor effect enabled
                 EffectStateManager stateManager = EffectStateManager.getServerState(player.getServer());
 
                 if (!stateManager.isArmorEnabled(player.getUuid())) {
-                    // Armor effect DISABLED, allow damage
-                    return true;
+                    return true; // Allow damage if effect disabled
                 }
 
-                // Cek apakah player pakai armor emerald
-                if (hasAnyEmeraldArmor(player)) {
-                    // Cek apakah damage dari fire/lava
+                // ✅ CHECK: Has Emerald OR Ruby Armor
+                if (hasAnyModArmor(player)) {
                     if (isFireDamage(source)) {
-                        // Cancel damage dari fire/lava
                         EmeraldMod.LOGGER.debug("Cancelled fire damage for player {} (armor effect enabled)",
                                 player.getName().getString());
-                        return false;
+                        return false; // Cancel fire damage
                     }
                 }
             }
@@ -40,11 +38,10 @@ public class DamagePreventionHandler {
             return true;
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Fire Damage Prevention Handler (Toggleable)");
+        EmeraldMod.LOGGER.info("✓ Registered Fire Damage Prevention (Emerald + Ruby Armor - Toggleable)");
     }
 
     private static boolean isFireDamage(DamageSource source) {
-        // Cek apakah damage termasuk fire damage
         return source.isIn(DamageTypeTags.IS_FIRE) ||
                 source.isOf(DamageTypes.IN_FIRE) ||
                 source.isOf(DamageTypes.ON_FIRE) ||
@@ -52,9 +49,14 @@ public class DamagePreventionHandler {
                 source.isOf(DamageTypes.HOT_FLOOR);
     }
 
-    private static boolean hasAnyEmeraldArmor(PlayerEntity player) {
+    private static boolean hasAnyModArmor(PlayerEntity player) {
         for (ItemStack armorStack : player.getArmorItems()) {
+            // Check Emerald Armor
             if (armorStack.getItem() instanceof EmeraldArmorItem) {
+                return true;
+            }
+            // Check Ruby Armor
+            if (armorStack.getItem() instanceof RubyArmorItem) {
                 return true;
             }
         }

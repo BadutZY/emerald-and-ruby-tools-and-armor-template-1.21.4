@@ -1,0 +1,9 @@
+{
+    "type": "minecraft:blasting",
+    "ingredient": "emeraldmod:ruby_debris",
+    "result": {
+        "id": "emeraldmod:ruby_scrap"
+    },
+    "experience": 0.7,
+    "cookingtime": 100
+}

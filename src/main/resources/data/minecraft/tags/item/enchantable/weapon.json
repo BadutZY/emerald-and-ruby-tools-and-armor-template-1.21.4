@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "emeraldmod:emerald_sword",
-    "emeraldmod:emerald_axe"
+    "emeraldmod:emerald_axe",
+    "emeraldmod:ruby_sword",
+    "emeraldmod:ruby_axe"
   ]
 }

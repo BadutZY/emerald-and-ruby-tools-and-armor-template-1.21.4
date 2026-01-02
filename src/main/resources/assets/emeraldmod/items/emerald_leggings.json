@@ -5,79 +5,93 @@
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/quartz_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/quartz_trim"
         },
         "when": "minecraft:quartz"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/iron_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/iron_trim"
         },
         "when": "minecraft:iron"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/netherite_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/netherite_trim"
         },
         "when": "minecraft:netherite"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/redstone_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/redstone_trim"
         },
         "when": "minecraft:redstone"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/copper_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/copper_trim"
         },
         "when": "minecraft:copper"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/gold_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/gold_trim"
         },
         "when": "minecraft:gold"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/emerald_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/emerald_trim"
         },
         "when": "minecraft:emerald"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/diamond_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/diamond_trim"
         },
         "when": "minecraft:diamond"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/lapis_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/lapis_trim"
         },
         "when": "minecraft:lapis"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/amethyst_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/amethyst_trim"
         },
         "when": "minecraft:amethyst"
       },
       {
         "model": {
           "type": "minecraft:model",
-          "model": "emeraldmod:item/trims/leggings/resin_trim"
+          "model": "emeraldmod:item/trims/emerald/leggings/resin_trim"
         },
         "when": "minecraft:resin"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/emerald/leggings/ruby_trim"
+        },
+        "when": "emeraldmod:ruby"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/emerald/leggings/ruby_trim"
+        },
+        "when": "emeraldmod:ruby_ingot"
       }
     ],
     "fallback": {

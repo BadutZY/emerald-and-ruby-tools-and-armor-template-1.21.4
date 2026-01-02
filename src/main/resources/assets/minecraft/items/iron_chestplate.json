@@ -1,0 +1,26 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/iron/chestplate/ruby_trim"
+        },
+        "when": "emeraldmod:ruby"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "emeraldmod:item/trims/iron/chestplate/ruby_trim"
+        },
+        "when": "emeraldmod:ruby_ingot"
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/iron_chestplate"
+    },
+    "property": "minecraft:trim_material"
+  }
+}

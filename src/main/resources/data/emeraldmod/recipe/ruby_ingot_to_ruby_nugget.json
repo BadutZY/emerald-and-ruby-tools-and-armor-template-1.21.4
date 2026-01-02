@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "#"
+  ],
+  "key": {
+    "#": "emeraldmod:ruby_ingot"
+  },
+  "result": {
+    "id": "emeraldmod:ruby_nugget",
+    "count": 9
+  }
+}

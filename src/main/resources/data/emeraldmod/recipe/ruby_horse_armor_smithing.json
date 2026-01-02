@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smithing_transform",
+  "base": "emeraldmod:emerald_horse_armor",
+  "addition": "emeraldmod:ruby",
+  "template": "emeraldmod:ruby_upgrade_smithing_template",
+  "result": {
+    "id": "emeraldmod:ruby_horse_armor",
+    "count": 1
+  }
+}

@@ -6,6 +6,8 @@ import com.example.emeraldmod.item.ModItems;
 import com.example.emeraldmod.state.EffectStateManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,8 +20,8 @@ import java.util.UUID;
 
 public class ArmorEffectsHandler {
 
-    // Track previous state untuk prevent spam logging
     private static final Map<UUID, Boolean> previousArmorState = new HashMap<>();
+    private static final Map<UUID, Boolean> previousNegativeImmunityState = new HashMap<>();
 
     public static void register() {
         ServerTickEvents.START_SERVER_TICK.register(server -> {
@@ -30,48 +32,61 @@ public class ArmorEffectsHandler {
                 boolean currentState = stateManager.isArmorEnabled(playerUuid);
                 Boolean previousState = previousArmorState.get(playerUuid);
 
-                // Check if armor effect is enabled untuk player ini
                 if (currentState) {
+                    // Check apakah player punya Ruby Armor
+                    boolean hasRubyArmor = hasAnyRubyArmor(player);
+                    Boolean previousNegativeImmunity = previousNegativeImmunityState.get(playerUuid);
+
+                    // ⭐ IMPROVED: Hapus negative effects SEBELUM apply armor effects
+                    // Ini memastikan negative effects langsung hilang saat armor effect dinyalakan
+                    if (hasRubyArmor && (previousNegativeImmunity == null || !previousNegativeImmunity)) {
+                        removeAllNegativeEffects(player);
+                        EmeraldMod.LOGGER.info("Cleared all negative effects from player {} (Negative Immunity activated)",
+                                player.getName().getString());
+                    }
+
+                    // Apply armor effects (termasuk Negative Immunity)
                     applyArmorEffects(player);
 
-                    // Log hanya saat state berubah dari OFF ke ON
+                    // ⭐ EXTRA SAFETY: Selalu hapus negative effects setiap tick jika punya Ruby Armor dan armor effect ON
+                    if (hasRubyArmor) {
+                        removeAllNegativeEffects(player);
+                    }
+
+                    // Update state
+                    previousNegativeImmunityState.put(playerUuid, hasRubyArmor);
+
                     if (previousState != null && !previousState) {
                         EmeraldMod.LOGGER.info("Armor effects ENABLED for player: {}",
                                 player.getName().getString());
                     }
                 } else {
-                    // Log hanya saat state berubah dari ON ke OFF
                     if (previousState == null || previousState) {
-                        EmeraldMod.LOGGER.info("=== REMOVING ARMOR EFFECTS ===");
-                        EmeraldMod.LOGGER.info("Player: {}", player.getName().getString());
                         removeArmorEffects(player);
-                        EmeraldMod.LOGGER.info("Successfully removed all armor effects");
                     } else {
-                        // State sudah OFF, remove tanpa log
                         removeArmorEffectsSilent(player);
                     }
+
+                    // Reset negative immunity state ketika armor disabled
+                    previousNegativeImmunityState.put(playerUuid, false);
                 }
 
-                // Update previous state
                 previousArmorState.put(playerUuid, currentState);
             }
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Emerald Armor Effects Handler (Toggleable)");
+        EmeraldMod.LOGGER.info("✓ Registered Armor Effects Handler (Emerald + Ruby Armor - Toggleable)");
+        EmeraldMod.LOGGER.info("  - Ruby Armor: Negative Effect Immunity (Auto-clear every tick)");
     }
 
     private static void applyArmorEffects(PlayerEntity player) {
-        // Cek helmet
+        // ===== HELMET: Water Breathing (Emerald OR Ruby) =====
         ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
-        if (helmet.getItem() == ModItems.EMERALD_HELMET) {
+        if (helmet.getItem() == ModItems.EMERALD_HELMET || helmet.getItem() == ModItems.RUBY_HELMET) {
             if (!hasInfiniteEffect(player, StatusEffects.WATER_BREATHING)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.WATER_BREATHING,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
+                        StatusEffectInstance.INFINITE, 0, false, false, true
                 ));
             }
         } else {
@@ -80,17 +95,13 @@ public class ArmorEffectsHandler {
             }
         }
 
-        // Cek chestplate
+        // ===== CHESTPLATE: Dolphin's Grace (Emerald OR Ruby) =====
         ItemStack chestplate = player.getEquippedStack(EquipmentSlot.CHEST);
-        if (chestplate.getItem() == ModItems.EMERALD_CHESTPLATE) {
+        if (chestplate.getItem() == ModItems.EMERALD_CHESTPLATE || chestplate.getItem() == ModItems.RUBY_CHESTPLATE) {
             if (!hasInfiniteEffect(player, StatusEffects.DOLPHINS_GRACE)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.DOLPHINS_GRACE,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
+                        StatusEffectInstance.INFINITE, 0, false, false, true
                 ));
             }
         } else {
@@ -99,17 +110,13 @@ public class ArmorEffectsHandler {
             }
         }
 
-        // Cek leggings - Silent Step Effect
+        // ===== LEGGINGS: Silent Step (Emerald OR Ruby) =====
         ItemStack leggings = player.getEquippedStack(EquipmentSlot.LEGS);
-        if (leggings.getItem() == ModItems.EMERALD_LEGGINGS) {
+        if (leggings.getItem() == ModItems.EMERALD_LEGGINGS || leggings.getItem() == ModItems.RUBY_LEGGINGS) {
             if (!hasInfiniteEffect(player, ModEffects.SILENT_STEP_ENTRY)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         ModEffects.SILENT_STEP_ENTRY,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
+                        StatusEffectInstance.INFINITE, 0, false, false, true
                 ));
             }
         } else {
@@ -118,17 +125,13 @@ public class ArmorEffectsHandler {
             }
         }
 
-        // Cek boots - Snow Powder Walker Effect
+        // ===== BOOTS: Snow Powder Walker (Emerald OR Ruby) =====
         ItemStack boots = player.getEquippedStack(EquipmentSlot.FEET);
-        if (boots.getItem() == ModItems.EMERALD_BOOTS) {
+        if (boots.getItem() == ModItems.EMERALD_BOOTS || boots.getItem() == ModItems.RUBY_BOOTS) {
             if (!hasInfiniteEffect(player, ModEffects.SNOW_POWDER_WALKER_ENTRY)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         ModEffects.SNOW_POWDER_WALKER_ENTRY,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
+                        StatusEffectInstance.INFINITE, 0, false, false, true
                 ));
             }
         } else {
@@ -137,16 +140,12 @@ public class ArmorEffectsHandler {
             }
         }
 
-        // Fire Resistance untuk semua armor emerald
-        if (hasAnyEmeraldArmor(player)) {
+        // ===== FIRE RESISTANCE: Any Emerald OR Ruby Armor =====
+        if (hasAnyModArmor(player)) {
             if (!hasInfiniteEffect(player, StatusEffects.FIRE_RESISTANCE)) {
                 player.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.FIRE_RESISTANCE,
-                        StatusEffectInstance.INFINITE,
-                        0,
-                        false,
-                        false,
-                        true
+                        StatusEffectInstance.INFINITE, 0, false, false, true
                 ));
             }
 
@@ -158,25 +157,86 @@ public class ArmorEffectsHandler {
                 player.removeStatusEffect(StatusEffects.FIRE_RESISTANCE);
             }
         }
+
+        // ===== NEGATIVE IMMUNITY: Any Ruby Armor =====
+        if (hasAnyRubyArmor(player)) {
+            // Apply Negative Immunity effect
+            if (!hasInfiniteEffect(player, ModEffects.NEGATIVE_IMMUNITY_ENTRY)) {
+                player.addStatusEffect(new StatusEffectInstance(
+                        ModEffects.NEGATIVE_IMMUNITY_ENTRY,
+                        StatusEffectInstance.INFINITE, 0, false, false, true
+                ));
+            }
+        } else {
+            // Remove Negative Immunity jika tidak ada Ruby armor
+            if (player.hasStatusEffect(ModEffects.NEGATIVE_IMMUNITY_ENTRY)) {
+                player.removeStatusEffect(ModEffects.NEGATIVE_IMMUNITY_ENTRY);
+            }
+        }
     }
 
-    private static boolean hasAnyEmeraldArmor(PlayerEntity player) {
+    /**
+     * ⭐ IMPROVED METHOD: Remove semua negative effects dari player
+     * Hanya menghapus HARMFUL effects, membiarkan BENEFICIAL effects tetap ada
+     */
+    private static void removeAllNegativeEffects(PlayerEntity player) {
+        // Collect list of negative effects untuk dihapus
+        java.util.List<net.minecraft.registry.entry.RegistryEntry<StatusEffect>> effectsToRemove =
+                new java.util.ArrayList<>();
+
+        // Scan semua active effects
+        for (StatusEffectInstance activeEffect : player.getStatusEffects()) {
+            StatusEffect statusEffect = activeEffect.getEffectType().value();
+
+            // Hanya collect HARMFUL effects
+            if (statusEffect.getCategory() == StatusEffectCategory.HARMFUL) {
+                effectsToRemove.add(activeEffect.getEffectType());
+            }
+        }
+
+        // Remove semua negative effects yang sudah di-collect
+        for (net.minecraft.registry.entry.RegistryEntry<StatusEffect> effectToRemove : effectsToRemove) {
+            player.removeStatusEffect(effectToRemove);
+        }
+    }
+
+    /**
+     * Check if player is wearing ANY Ruby armor piece
+     */
+    private static boolean hasAnyRubyArmor(PlayerEntity player) {
         for (ItemStack armorStack : player.getArmorItems()) {
-            if (armorStack.getItem() == ModItems.EMERALD_HELMET ||
-                    armorStack.getItem() == ModItems.EMERALD_CHESTPLATE ||
-                    armorStack.getItem() == ModItems.EMERALD_LEGGINGS ||
-                    armorStack.getItem() == ModItems.EMERALD_BOOTS) {
+            if (armorStack.getItem() == ModItems.RUBY_HELMET ||
+                    armorStack.getItem() == ModItems.RUBY_CHESTPLATE ||
+                    armorStack.getItem() == ModItems.RUBY_LEGGINGS ||
+                    armorStack.getItem() == ModItems.RUBY_BOOTS) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Remove semua armor effects DENGAN logging (dipanggil pertama kali saja)
-     */
+    private static boolean hasAnyModArmor(PlayerEntity player) {
+        for (ItemStack armorStack : player.getArmorItems()) {
+            // Check Emerald Armor
+            if (armorStack.getItem() == ModItems.EMERALD_HELMET ||
+                    armorStack.getItem() == ModItems.EMERALD_CHESTPLATE ||
+                    armorStack.getItem() == ModItems.EMERALD_LEGGINGS ||
+                    armorStack.getItem() == ModItems.EMERALD_BOOTS) {
+                return true;
+            }
+            // Check Ruby Armor
+            if (armorStack.getItem() == ModItems.RUBY_HELMET ||
+                    armorStack.getItem() == ModItems.RUBY_CHESTPLATE ||
+                    armorStack.getItem() == ModItems.RUBY_LEGGINGS ||
+                    armorStack.getItem() == ModItems.RUBY_BOOTS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void removeArmorEffects(PlayerEntity player) {
-        // Remove all status effects
+        // Remove ability effects
         if (player.hasStatusEffect(StatusEffects.WATER_BREATHING)) {
             player.removeStatusEffect(StatusEffects.WATER_BREATHING);
         }
@@ -192,18 +252,22 @@ public class ArmorEffectsHandler {
         if (player.hasStatusEffect(ModEffects.SNOW_POWDER_WALKER_ENTRY)) {
             player.removeStatusEffect(ModEffects.SNOW_POWDER_WALKER_ENTRY);
         }
+        if (player.hasStatusEffect(ModEffects.INFINITE_DURABILITY_ENTRY)) {
+            player.removeStatusEffect(ModEffects.INFINITE_DURABILITY_ENTRY);
+        }
 
-        // Reset fire ticks
+        // Remove Negative Immunity
+        if (player.hasStatusEffect(ModEffects.NEGATIVE_IMMUNITY_ENTRY)) {
+            player.removeStatusEffect(ModEffects.NEGATIVE_IMMUNITY_ENTRY);
+        }
+
         if (player.getFireTicks() > 0) {
             player.setFireTicks(0);
         }
     }
 
-    /**
-     * Remove semua armor effects TANPA logging (dipanggil setiap tick setelahnya)
-     */
     private static void removeArmorEffectsSilent(PlayerEntity player) {
-        // Remove effects tanpa log spam
+        // Remove ability effects
         if (player.hasStatusEffect(StatusEffects.WATER_BREATHING)) {
             player.removeStatusEffect(StatusEffects.WATER_BREATHING);
         }
@@ -220,26 +284,24 @@ public class ArmorEffectsHandler {
             player.removeStatusEffect(ModEffects.SNOW_POWDER_WALKER_ENTRY);
         }
 
+        // Remove Negative Immunity
+        if (player.hasStatusEffect(ModEffects.NEGATIVE_IMMUNITY_ENTRY)) {
+            player.removeStatusEffect(ModEffects.NEGATIVE_IMMUNITY_ENTRY);
+        }
+
         if (player.getFireTicks() > 0) {
             player.setFireTicks(0);
         }
     }
 
-    /**
-     * Cek apakah player sudah memiliki effect dengan duration INFINITE
-     */
     private static boolean hasInfiniteEffect(PlayerEntity player, net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> effect) {
         StatusEffectInstance instance = player.getStatusEffect(effect);
-        if (instance == null) {
-            return false;
-        }
+        if (instance == null) return false;
         return instance.isDurationBelow(0) || instance.getDuration() == StatusEffectInstance.INFINITE;
     }
 
-    /**
-     * Clear tracking saat player disconnect
-     */
     public static void clearPlayerState(UUID playerUuid) {
         previousArmorState.remove(playerUuid);
+        previousNegativeImmunityState.remove(playerUuid);
     }
 }

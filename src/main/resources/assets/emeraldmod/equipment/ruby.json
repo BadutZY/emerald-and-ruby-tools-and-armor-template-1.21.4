@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "emeraldmod:ruby"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "emeraldmod:ruby"
+      }
+    ],
+    "horse_body": [
+      {
+        "texture": "emeraldmod:ruby_horse"
+      }
+    ]
+  }
+}

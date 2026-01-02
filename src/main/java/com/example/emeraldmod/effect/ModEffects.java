@@ -64,6 +64,38 @@ public class ModEffects {
             new HorseSnowEffect());
     public static RegistryEntry<StatusEffect> HORSE_SNOW_ENTRY;
 
+    public static StatusEffect INFINITE_DURABILITY = registerEffect("infinite_durability",
+            new NegativeImmunHorseEffect());
+    public static RegistryEntry<StatusEffect> INFINITE_DURABILITY_ENTRY;
+
+    public static StatusEffect NEGATIVE_IMMUNITY = registerEffect("negative_immun",
+            new NegativeImmunityEffect());
+    public static RegistryEntry<StatusEffect> NEGATIVE_IMMUNITY_ENTRY;
+
+    public static StatusEffect NEGATIVE_IMMUN_HORSE = registerEffect("negative_horse",
+            new NegativeImmunHorseEffect());
+    public static RegistryEntry<StatusEffect> NEGATIVE_IMMUN_HORSE_ENTRY;
+
+    public static StatusEffect VEIN_MINING = registerEffect("vein_mining",
+            new VeinMiningEffect());
+    public static RegistryEntry<StatusEffect> VEIN_MINING_ENTRY;
+
+    public static StatusEffect LIGHTING_SLASH = registerEffect("lightning_slash",
+            new LightningSlashEffect());
+    public static RegistryEntry<StatusEffect> LIGHTING_SLASH_ENTRY;
+
+    public static StatusEffect AUTO_PLACE = registerEffect("auto_place",
+            new AutoPlaceEffect());
+    public static RegistryEntry<StatusEffect> AUTO_PLACE_ENTRY;
+
+    public static StatusEffect FAST_DIGGING = registerEffect("fast_digging",
+            new FastDiggingEffect());
+    public static RegistryEntry<StatusEffect> FAST_DIGGING_ENTRY;
+
+    public static StatusEffect MORE_HARVEST = registerEffect("more_harvest",
+            new MoreHarvestEffect());
+    public static RegistryEntry<StatusEffect> MORE_HARVEST_ENTRY;
+
     private static StatusEffect registerEffect(String name, StatusEffect effect) {
         Identifier id = Identifier.of(EmeraldMod.MOD_ID, name);
         EmeraldMod.LOGGER.info("Registering status effect: " + id);
@@ -87,6 +119,13 @@ public class ModEffects {
         HORSE_FIRE_ENTRY = Registries.STATUS_EFFECT.getEntry(HORSE_FIRE);
         HORSE_LAVA_ENTRY = Registries.STATUS_EFFECT.getEntry(HORSE_LAVA);
         HORSE_SNOW_ENTRY = Registries.STATUS_EFFECT.getEntry(HORSE_SNOW);
+        NEGATIVE_IMMUNITY_ENTRY = Registries.STATUS_EFFECT.getEntry(NEGATIVE_IMMUNITY);
+        NEGATIVE_IMMUN_HORSE_ENTRY = Registries.STATUS_EFFECT.getEntry(NEGATIVE_IMMUN_HORSE);
+        VEIN_MINING_ENTRY = Registries.STATUS_EFFECT.getEntry(VEIN_MINING);
+        LIGHTING_SLASH_ENTRY = Registries.STATUS_EFFECT.getEntry(LIGHTING_SLASH);
+        AUTO_PLACE_ENTRY = Registries.STATUS_EFFECT.getEntry(AUTO_PLACE);
+        FAST_DIGGING_ENTRY = Registries.STATUS_EFFECT.getEntry(FAST_DIGGING);
+        MORE_HARVEST_ENTRY = Registries.STATUS_EFFECT.getEntry(MORE_HARVEST);
 
         EmeraldMod.LOGGER.info("âœ“ Registered Armor Effects:");
         EmeraldMod.LOGGER.info("  - Snow Powder Walker (Boots)");

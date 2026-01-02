@@ -7,10 +7,14 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.SaplingBlock;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,340 +23,320 @@ import java.util.*;
 
 public class TreeChoppingHandler {
 
-    private static final Random RANDOM = new Random();
+    private static final int MAX_LOGS = 128;
+    private static final int SEARCH_RADIUS = 5;
 
-    // Konfigurasi untuk pohon besar
-    private static final int MAX_LOGS = 500;
-    private static final int SEARCH_RADIUS_HORIZONTAL = 50;
-    private static final int SEARCH_RADIUS_VERTICAL = 80;
-    private static final int LEAF_CHECK_RADIUS = 15;
-    private static final int LEAF_CHECK_HEIGHT = 30;
+    // Map log type ke sapling untuk auto-replant (Ruby Axe only)
+    private static final Map<Block, Block> LOG_TO_SAPLING = new HashMap<>();
 
-    // Set of log blocks yang bisa di-chop
-    private static final Set<Block> LOG_BLOCKS = new HashSet<>(Arrays.asList(
-            Blocks.OAK_LOG, Blocks.STRIPPED_OAK_LOG,
-            Blocks.SPRUCE_LOG, Blocks.STRIPPED_SPRUCE_LOG,
-            Blocks.BIRCH_LOG, Blocks.STRIPPED_BIRCH_LOG,
-            Blocks.JUNGLE_LOG, Blocks.STRIPPED_JUNGLE_LOG,
-            Blocks.ACACIA_LOG, Blocks.STRIPPED_ACACIA_LOG,
-            Blocks.DARK_OAK_LOG, Blocks.STRIPPED_DARK_OAK_LOG,
-            Blocks.MANGROVE_LOG, Blocks.STRIPPED_MANGROVE_LOG,
-            Blocks.CHERRY_LOG, Blocks.STRIPPED_CHERRY_LOG,
-            Blocks.CRIMSON_STEM, Blocks.STRIPPED_CRIMSON_STEM,
-            Blocks.WARPED_STEM, Blocks.STRIPPED_WARPED_STEM,
-            // Wood blocks
-            Blocks.OAK_WOOD, Blocks.STRIPPED_OAK_WOOD,
-            Blocks.SPRUCE_WOOD, Blocks.STRIPPED_SPRUCE_WOOD,
-            Blocks.BIRCH_WOOD, Blocks.STRIPPED_BIRCH_WOOD,
-            Blocks.JUNGLE_WOOD, Blocks.STRIPPED_JUNGLE_WOOD,
-            Blocks.ACACIA_WOOD, Blocks.STRIPPED_ACACIA_WOOD,
-            Blocks.DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD,
-            Blocks.MANGROVE_WOOD, Blocks.STRIPPED_MANGROVE_WOOD,
-            Blocks.CHERRY_WOOD, Blocks.STRIPPED_CHERRY_WOOD,
-            Blocks.CRIMSON_HYPHAE, Blocks.STRIPPED_CRIMSON_HYPHAE,
-            Blocks.WARPED_HYPHAE, Blocks.STRIPPED_WARPED_HYPHAE
-    ));
+    static {
+        // Oak
+        LOG_TO_SAPLING.put(Blocks.OAK_LOG, Blocks.OAK_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_OAK_LOG, Blocks.OAK_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.OAK_WOOD, Blocks.OAK_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_OAK_WOOD, Blocks.OAK_SAPLING);
 
-    // Set of leaf blocks untuk deteksi pohon
-    private static final Set<Block> LEAF_BLOCKS = new HashSet<>(Arrays.asList(
-            Blocks.OAK_LEAVES,
-            Blocks.SPRUCE_LEAVES,
-            Blocks.BIRCH_LEAVES,
-            Blocks.JUNGLE_LEAVES,
-            Blocks.ACACIA_LEAVES,
-            Blocks.DARK_OAK_LEAVES,
-            Blocks.MANGROVE_LEAVES,
-            Blocks.CHERRY_LEAVES,
-            Blocks.AZALEA_LEAVES,
-            Blocks.FLOWERING_AZALEA_LEAVES,
-            Blocks.NETHER_WART_BLOCK,
-            Blocks.WARPED_WART_BLOCK
-    ));
+        // Spruce
+        LOG_TO_SAPLING.put(Blocks.SPRUCE_LOG, Blocks.SPRUCE_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_SPRUCE_LOG, Blocks.SPRUCE_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.SPRUCE_WOOD, Blocks.SPRUCE_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_SPRUCE_WOOD, Blocks.SPRUCE_SAPLING);
+
+        // Birch
+        LOG_TO_SAPLING.put(Blocks.BIRCH_LOG, Blocks.BIRCH_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_BIRCH_LOG, Blocks.BIRCH_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.BIRCH_WOOD, Blocks.BIRCH_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_BIRCH_WOOD, Blocks.BIRCH_SAPLING);
+
+        // Jungle
+        LOG_TO_SAPLING.put(Blocks.JUNGLE_LOG, Blocks.JUNGLE_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_JUNGLE_LOG, Blocks.JUNGLE_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.JUNGLE_WOOD, Blocks.JUNGLE_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_JUNGLE_WOOD, Blocks.JUNGLE_SAPLING);
+
+        // Acacia
+        LOG_TO_SAPLING.put(Blocks.ACACIA_LOG, Blocks.ACACIA_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_ACACIA_LOG, Blocks.ACACIA_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.ACACIA_WOOD, Blocks.ACACIA_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_ACACIA_WOOD, Blocks.ACACIA_SAPLING);
+
+        // Dark Oak
+        LOG_TO_SAPLING.put(Blocks.DARK_OAK_LOG, Blocks.DARK_OAK_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_DARK_OAK_LOG, Blocks.DARK_OAK_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.DARK_OAK_WOOD, Blocks.DARK_OAK_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.DARK_OAK_SAPLING);
+
+        // Mangrove
+        LOG_TO_SAPLING.put(Blocks.MANGROVE_LOG, Blocks.MANGROVE_PROPAGULE);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_MANGROVE_LOG, Blocks.MANGROVE_PROPAGULE);
+        LOG_TO_SAPLING.put(Blocks.MANGROVE_WOOD, Blocks.MANGROVE_PROPAGULE);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_MANGROVE_WOOD, Blocks.MANGROVE_PROPAGULE);
+
+        // Cherry
+        LOG_TO_SAPLING.put(Blocks.CHERRY_LOG, Blocks.CHERRY_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_CHERRY_LOG, Blocks.CHERRY_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.CHERRY_WOOD, Blocks.CHERRY_SAPLING);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_CHERRY_WOOD, Blocks.CHERRY_SAPLING);
+
+        // Crimson (Nether) - uses fungus
+        LOG_TO_SAPLING.put(Blocks.CRIMSON_STEM, Blocks.CRIMSON_FUNGUS);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_CRIMSON_STEM, Blocks.CRIMSON_FUNGUS);
+        LOG_TO_SAPLING.put(Blocks.CRIMSON_HYPHAE, Blocks.CRIMSON_FUNGUS);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_CRIMSON_HYPHAE, Blocks.CRIMSON_FUNGUS);
+
+        // Warped (Nether) - uses fungus
+        LOG_TO_SAPLING.put(Blocks.WARPED_STEM, Blocks.WARPED_FUNGUS);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_WARPED_STEM, Blocks.WARPED_FUNGUS);
+        LOG_TO_SAPLING.put(Blocks.WARPED_HYPHAE, Blocks.WARPED_FUNGUS);
+        LOG_TO_SAPLING.put(Blocks.STRIPPED_WARPED_HYPHAE, Blocks.WARPED_FUNGUS);
+    }
 
     public static void register() {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
             ItemStack tool = player.getMainHandStack();
-            if (tool.getItem() == ModItems.EMERALD_AXE) {
-                Block block = state.getBlock();
+            boolean isEmeraldAxe = tool.getItem() == ModItems.EMERALD_AXE;
+            boolean isRubyAxe = tool.getItem() == ModItems.RUBY_AXE;
 
-                if (LOG_BLOCKS.contains(block)) {
-                    if (isPartOfTree(world, pos)) {
-                        // ✅ CHECK: Apakah tools effect enabled?
-                        if (!world.isClient) {
-                            ServerWorld serverWorld = (ServerWorld) world;
-                            EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
+            // Check if using Emerald or Ruby Axe
+            if (!isEmeraldAxe && !isRubyAxe) {
+                return true;
+            }
 
-                            if (!stateManager.isToolsEnabled(player.getUuid())) {
-                                // Tools effect DISABLED, biarkan break normal
-                                EmeraldMod.LOGGER.debug("Tree chopping disabled for player {}", player.getName().getString());
-                                return true; // Allow normal vanilla break
-                            }
-                        }
+            // Check tools effect enabled
+            if (!world.isClient) {
+                ServerWorld serverWorld = (ServerWorld) world;
+                EffectStateManager stateManager = EffectStateManager.getServerState(serverWorld.getServer());
 
-                        // Tools effect ENABLED, lakukan tree chopping
-                        handleTreeChopping(world, player, pos, state, tool);
-                        return false; // Cancel default break
-                    }
+                if (!stateManager.isToolsEnabled(player.getUuid())) {
+                    return true;
                 }
             }
+
+            Block block = state.getBlock();
+            if (state.isIn(BlockTags.LOGS)) {
+                // Pass info apakah ini Ruby Axe untuk auto-replant
+                handleTreeChopping(world, player, pos, state, tool, isRubyAxe);
+                return false;
+            }
+
             return true;
         });
 
-        EmeraldMod.LOGGER.info("✓ Registered Tree Chopping Handler with Fortune & Silk Touch Support (Toggleable)");
+        EmeraldMod.LOGGER.info("✓ Registered Tree Chopping Handler (Toggleable)");
+        EmeraldMod.LOGGER.info("  - Emerald Axe: Tree chopping only");
+        EmeraldMod.LOGGER.info("  - Ruby Axe: Tree chopping + Auto-replant sapling");
     }
 
-    private static boolean isPartOfTree(World world, BlockPos pos) {
-        for (int dx = -LEAF_CHECK_RADIUS; dx <= LEAF_CHECK_RADIUS; dx++) {
-            for (int dy = -5; dy <= LEAF_CHECK_HEIGHT; dy++) {
-                for (int dz = -LEAF_CHECK_RADIUS; dz <= LEAF_CHECK_RADIUS; dz++) {
-                    BlockPos checkPos = pos.add(dx, dy, dz);
-                    if (LEAF_BLOCKS.contains(world.getBlockState(checkPos).getBlock())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private static void handleTreeChopping(World world, PlayerEntity player, BlockPos startPos, BlockState startState, ItemStack tool) {
+    private static void handleTreeChopping(World world, PlayerEntity player, BlockPos startPos,
+                                           BlockState startState, ItemStack axe, boolean isRubyAxe) {
         if (world.isClient) return;
 
         ServerWorld serverWorld = (ServerWorld) world;
+        Block targetLog = startState.getBlock();
 
-        // Get Fortune level
+        Set<BlockPos> processedBlocks = new HashSet<>();
+        Queue<BlockPos> toProcess = new LinkedList<>();
+        toProcess.add(startPos);
+        processedBlocks.add(startPos);
+
+        int totalLogsMined = 0;
+        Map<ItemStack, Integer> totalDrops = new HashMap<>();
+
+        // Track posisi terendah untuk auto-replant
+        BlockPos lowestLogPos = startPos;
+        int lowestY = startPos.getY();
+
         int fortuneLevel = EnchantmentHelper.getLevel(
                 world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
                         .getOrThrow(Enchantments.FORTUNE),
-                tool
+                axe
         );
 
-        // Get Silk Touch level
-        int silkTouchLevel = EnchantmentHelper.getLevel(
-                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.SILK_TOUCH),
-                tool
-        );
+        EmeraldMod.LOGGER.debug("Starting tree chopping at {} (Ruby Axe: {})", startPos, isRubyAxe);
 
-        // Get Efficiency level
-        int efficiencyLevel = EnchantmentHelper.getLevel(
-                world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT)
-                        .getOrThrow(Enchantments.EFFICIENCY),
-                tool
-        );
-
-        // Find all connected logs
-        Set<BlockPos> logsToBreak = findConnectedLogs(world, startPos);
-
-        if (logsToBreak.isEmpty()) {
-            return;
-        }
-
-        if (logsToBreak.size() > MAX_LOGS) {
-            EmeraldMod.LOGGER.warn("Tree extremely large! Found {} logs, limiting to {}", logsToBreak.size(), MAX_LOGS);
-            Set<BlockPos> limited = new HashSet<>();
-            int count = 0;
-            for (BlockPos pos : logsToBreak) {
-                if (count++ >= MAX_LOGS) break;
-                limited.add(pos);
-            }
-            logsToBreak = limited;
-        }
-
-        EmeraldMod.LOGGER.info("Chopping tree: {} logs (Fortune: {}, Silk Touch: {}, Efficiency: {})",
-                logsToBreak.size(), fortuneLevel, silkTouchLevel, efficiencyLevel);
-
-        // Break all logs with proper drops
-        int successfulBreaks = 0;
-        int totalItemsDropped = 0;
-
-        for (BlockPos logPos : logsToBreak) {
-            BlockState logState = world.getBlockState(logPos);
-            Block logBlock = logState.getBlock();
-
-            if (LOG_BLOCKS.contains(logBlock)) {
-                List<ItemStack> drops;
-
-                if (silkTouchLevel > 0) {
-                    // Silk Touch: drop the block itself
-                    drops = new ArrayList<>();
-                    drops.add(new ItemStack(logBlock));
-                } else {
-                    // Normal drop with Fortune
-                    drops = Block.getDroppedStacks(logState, serverWorld, logPos, null, player, tool);
-
-                    // Apply ADDITIONAL Fortune bonus
-                    if (fortuneLevel > 0) {
-                        applyFortuneBonus(drops, fortuneLevel);
-                    }
-                }
-
-                // Remove block
-                serverWorld.removeBlock(logPos, false);
-
-                // Drop items at position
-                for (ItemStack drop : drops) {
-                    Block.dropStack(serverWorld, logPos, drop);
-                    totalItemsDropped += drop.getCount();
-                }
-
-                successfulBreaks++;
-            }
-        }
-
-        // Calculate durability damage
-        // Unbreaking enchantment is handled automatically by damage() method
-        int durabilityDamage = Math.max(1, Math.min(successfulBreaks / 5, 20));
-        tool.damage(durabilityDamage, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
-
-        // Add experience based on logs chopped
-        int experience = Math.min(successfulBreaks / 10, 10);
-        if (experience > 0) {
-            player.addExperience(experience);
-        }
-
-        EmeraldMod.LOGGER.info("Tree chopped! {} logs broken, {} items dropped (Fortune: {}, Silk Touch: {}), {} durability damage",
-                successfulBreaks, totalItemsDropped, fortuneLevel, silkTouchLevel, durabilityDamage);
-    }
-
-    /**
-     * Apply ADDITIONAL Fortune bonus to log drops
-     * This adds extra items on top of vanilla drops
-     */
-    private static void applyFortuneBonus(List<ItemStack> drops, int fortuneLevel) {
-        for (ItemStack drop : drops) {
-            if (drop.isEmpty()) continue;
-
-            // Calculate bonus items based on Fortune level
-            // Fortune increases drop chance for logs
-            // Formula: Base + (0 to fortuneLevel) bonus items per log
-
-            int currentCount = drop.getCount();
-            int bonusItems = 0;
-
-            // Each Fortune level gives a chance for extra drops
-            for (int i = 0; i < currentCount; i++) {
-                // Fortune I: 33% chance for +1
-                // Fortune II: 50% chance for +1-2
-                // Fortune III: 66% chance for +1-3
-
-                float baseChance = 0.25f + (0.15f * fortuneLevel); // 40%, 55%, 70%
-
-                if (RANDOM.nextFloat() < baseChance) {
-                    bonusItems += RANDOM.nextInt(fortuneLevel) + 1;
-                }
-            }
-
-            // Apply bonus
-            if (bonusItems > 0) {
-                drop.setCount(currentCount + bonusItems);
-                EmeraldMod.LOGGER.debug("Fortune bonus for {}: +{} items (Fortune {})",
-                        drop.getItem().getName().getString(), bonusItems, fortuneLevel);
-            }
-        }
-    }
-
-    private static Set<BlockPos> findConnectedLogs(World world, BlockPos startPos) {
-        Set<BlockPos> result = new HashSet<>();
-        Queue<BlockPos> toCheck = new LinkedList<>();
-        Set<BlockPos> visited = new HashSet<>();
-
-        toCheck.add(startPos);
-        visited.add(startPos);
-
-        int iterationCount = 0;
-        final int MAX_ITERATIONS = 10000;
-
-        while (!toCheck.isEmpty() && result.size() < MAX_LOGS && iterationCount < MAX_ITERATIONS) {
-            iterationCount++;
-            BlockPos current = toCheck.poll();
-            BlockState currentState = world.getBlockState(current);
+        // BFS untuk menemukan semua logs
+        while (!toProcess.isEmpty() && totalLogsMined < MAX_LOGS) {
+            BlockPos currentPos = toProcess.poll();
+            BlockState currentState = serverWorld.getBlockState(currentPos);
             Block currentBlock = currentState.getBlock();
 
-            if (LOG_BLOCKS.contains(currentBlock)) {
-                result.add(current);
+            if (currentState.isIn(BlockTags.LOGS) && currentBlock == targetLog) {
+                totalLogsMined++;
 
-                for (BlockPos neighbor : getExtendedNeighbors(current)) {
-                    if (!visited.contains(neighbor)) {
-                        visited.add(neighbor);
+                // Track posisi terendah
+                if (currentPos.getY() < lowestY) {
+                    lowestY = currentPos.getY();
+                    lowestLogPos = currentPos;
+                }
 
-                        if (isWithinSearchRadius(startPos, neighbor)) {
-                            BlockState neighborState = world.getBlockState(neighbor);
-                            Block neighborBlock = neighborState.getBlock();
+                // Get drops dari log
+                List<ItemStack> drops = Block.getDroppedStacks(currentState, serverWorld, currentPos, null, player, axe);
 
-                            if (LOG_BLOCKS.contains(neighborBlock)) {
-                                toCheck.add(neighbor);
-                            }
+                for (ItemStack drop : drops) {
+                    addToTotalDrops(totalDrops, drop, drop.getCount());
+                }
+
+                // Break block
+                serverWorld.breakBlock(currentPos, false, player);
+
+                // Cari logs di sekitar
+                for (BlockPos neighborPos : getNeighborPositions(currentPos)) {
+                    if (!processedBlocks.contains(neighborPos) && isWithinSearchRadius(startPos, neighborPos)) {
+                        BlockState neighborState = serverWorld.getBlockState(neighborPos);
+                        if (neighborState.isIn(BlockTags.LOGS)) {
+                            toProcess.add(neighborPos);
+                            processedBlocks.add(neighborPos);
                         }
                     }
                 }
             }
         }
 
-        if (iterationCount >= MAX_ITERATIONS) {
-            EmeraldMod.LOGGER.warn("Tree search reached max iterations! Found {} logs", result.size());
+        // Drop all collected items
+        if (!totalDrops.isEmpty()) {
+            for (Map.Entry<ItemStack, Integer> entry : totalDrops.entrySet()) {
+                ItemStack itemToDrop = entry.getKey().copy();
+                int totalCount = entry.getValue();
+
+                int maxStackSize = itemToDrop.getMaxCount();
+                while (totalCount > 0) {
+                    int stackSize = Math.min(totalCount, maxStackSize);
+                    ItemStack dropStack = itemToDrop.copy();
+                    dropStack.setCount(stackSize);
+
+                    ItemEntity itemEntity = new ItemEntity(
+                            serverWorld,
+                            startPos.getX() + 0.5,
+                            startPos.getY() + 0.5,
+                            startPos.getZ() + 0.5,
+                            dropStack
+                    );
+
+                    itemEntity.setVelocity(
+                            (serverWorld.random.nextDouble() - 0.5) * 0.1,
+                            0.2,
+                            (serverWorld.random.nextDouble() - 0.5) * 0.1
+                    );
+
+                    serverWorld.spawnEntity(itemEntity);
+                    totalCount -= stackSize;
+                }
+            }
         }
 
-        return result;
+        // ============================================
+        // AUTO-REPLANT SAPLING (RUBY AXE ONLY)
+        // ============================================
+        if (isRubyAxe && LOG_TO_SAPLING.containsKey(targetLog)) {
+            // Cari posisi ground yang cocok untuk plant sapling
+            BlockPos replantPos = findGroundPosition(serverWorld, lowestLogPos);
+
+            if (replantPos != null) {
+                Block saplingBlock = LOG_TO_SAPLING.get(targetLog);
+                BlockState saplingState = saplingBlock.getDefaultState();
+
+                // Validasi placement menggunakan canPlaceAt dari BlockState
+                if (saplingState.canPlaceAt(serverWorld, replantPos)) {
+                    // Place sapling
+                    serverWorld.setBlockState(replantPos, saplingState);
+
+                    EmeraldMod.LOGGER.info("Auto-replanted {} at {}",
+                            saplingBlock.getName().getString(), replantPos);
+                } else {
+                    EmeraldMod.LOGGER.debug("Cannot replant sapling at {} (invalid placement)", replantPos);
+                }
+            } else {
+                EmeraldMod.LOGGER.debug("Could not find valid ground position for replanting");
+            }
+        }
+
+        // Damage tool
+        int durabilityDamage = Math.min(totalLogsMined, axe.getMaxDamage() - axe.getDamage());
+        if (durabilityDamage > 0) {
+            axe.damage(durabilityDamage, player, net.minecraft.entity.EquipmentSlot.MAINHAND);
+        }
+
+        EmeraldMod.LOGGER.info("Tree chopping completed: {} logs mined{}",
+                totalLogsMined,
+                isRubyAxe ? " (sapling replanted)" : "");
     }
 
-    private static List<BlockPos> getExtendedNeighbors(BlockPos pos) {
+    /**
+     * Find ground position untuk plant sapling
+     */
+    private static BlockPos findGroundPosition(ServerWorld world, BlockPos startPos) {
+        // Cek dari posisi terendah log ke bawah sampai ketemu ground
+        BlockPos checkPos = startPos.down();
+
+        // Max 10 blocks ke bawah
+        for (int i = 0; i < 10; i++) {
+            BlockState groundState = world.getBlockState(checkPos);
+            BlockState aboveState = world.getBlockState(checkPos.up());
+
+            // Cek apakah ini ground yang cocok dan ada space di atasnya
+            if (isValidGround(groundState.getBlock()) && aboveState.isAir()) {
+                return checkPos.up(); // Return posisi di atas ground
+            }
+
+            checkPos = checkPos.down();
+        }
+
+        // Jika tidak ketemu, coba posisi original
+        BlockState originalGround = world.getBlockState(startPos.down());
+        BlockState originalAbove = world.getBlockState(startPos);
+
+        if (isValidGround(originalGround.getBlock()) && originalAbove.isAir()) {
+            return startPos;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if block is valid ground untuk sapling
+     */
+    private static boolean isValidGround(Block block) {
+        return block == Blocks.GRASS_BLOCK ||
+                block == Blocks.DIRT ||
+                block == Blocks.PODZOL ||
+                block == Blocks.COARSE_DIRT ||
+                block == Blocks.MYCELIUM ||
+                block == Blocks.ROOTED_DIRT ||
+                block == Blocks.MOSS_BLOCK ||
+                block == Blocks.CRIMSON_NYLIUM ||
+                block == Blocks.WARPED_NYLIUM;
+    }
+
+    private static void addToTotalDrops(Map<ItemStack, Integer> totalDrops, ItemStack item, int count) {
+        boolean found = false;
+        for (Map.Entry<ItemStack, Integer> entry : totalDrops.entrySet()) {
+            if (ItemStack.areItemsEqual(entry.getKey(), item)) {
+                entry.setValue(entry.getValue() + count);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            totalDrops.put(item.copy(), count);
+        }
+    }
+
+    private static List<BlockPos> getNeighborPositions(BlockPos pos) {
         List<BlockPos> neighbors = new ArrayList<>();
-
-        // 6 cardinal directions
-        neighbors.add(pos.up());
-        neighbors.add(pos.down());
-        neighbors.add(pos.north());
-        neighbors.add(pos.south());
-        neighbors.add(pos.east());
-        neighbors.add(pos.west());
-
-        // Horizontal diagonals
-        neighbors.add(pos.north().east());
-        neighbors.add(pos.north().west());
-        neighbors.add(pos.south().east());
-        neighbors.add(pos.south().west());
-
-        // Vertical diagonals
-        neighbors.add(pos.up().north());
-        neighbors.add(pos.up().south());
-        neighbors.add(pos.up().east());
-        neighbors.add(pos.up().west());
-        neighbors.add(pos.down().north());
-        neighbors.add(pos.down().south());
-        neighbors.add(pos.down().east());
-        neighbors.add(pos.down().west());
-
-        // 3D diagonals
-        neighbors.add(pos.up().north().east());
-        neighbors.add(pos.up().north().west());
-        neighbors.add(pos.up().south().east());
-        neighbors.add(pos.up().south().west());
-        neighbors.add(pos.down().north().east());
-        neighbors.add(pos.down().north().west());
-        neighbors.add(pos.down().south().east());
-        neighbors.add(pos.down().south().west());
-
-        // Extended vertical
-        neighbors.add(pos.up(2));
-        neighbors.add(pos.down(2));
-
-        // Extended horizontal
-        neighbors.add(pos.north(2));
-        neighbors.add(pos.south(2));
-        neighbors.add(pos.east(2));
-        neighbors.add(pos.west(2));
-
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    if (x == 0 && y == 0 && z == 0) continue;
+                    neighbors.add(pos.add(x, y, z));
+                }
+            }
+        }
         return neighbors;
     }
 
-    private static boolean isWithinSearchRadius(BlockPos start, BlockPos pos) {
-        int dx = Math.abs(pos.getX() - start.getX());
-        int dy = Math.abs(pos.getY() - start.getY());
-        int dz = Math.abs(pos.getZ() - start.getZ());
-
-        return dx <= SEARCH_RADIUS_HORIZONTAL &&
-                dy <= SEARCH_RADIUS_VERTICAL &&
-                dz <= SEARCH_RADIUS_HORIZONTAL;
+    private static boolean isWithinSearchRadius(BlockPos start, BlockPos current) {
+        return Math.abs(current.getX() - start.getX()) <= SEARCH_RADIUS &&
+                Math.abs(current.getY() - start.getY()) <= SEARCH_RADIUS * 4 &&
+                Math.abs(current.getZ() - start.getZ()) <= SEARCH_RADIUS;
     }
 }
