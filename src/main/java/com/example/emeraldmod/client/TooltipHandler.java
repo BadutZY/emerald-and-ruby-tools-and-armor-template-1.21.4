@@ -341,6 +341,8 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+        lines.add(Text.literal("- Safe from Piglin attacks").formatted(Formatting.RED));
+
     }
 
     //CHESTPLATE
@@ -383,6 +385,7 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+        lines.add(Text.literal("- Safe from Piglin attacks").formatted(Formatting.RED));
     }
 
     //LEGGING
@@ -425,6 +428,7 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+        lines.add(Text.literal("- Safe from Piglin attacks").formatted(Formatting.RED));
     }
 
     //BOOTS
@@ -467,6 +471,7 @@ public class TooltipHandler {
         lines.add(Text.literal("- Infinite Fire Resistance").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Cannot be affected by Negative effects").formatted(Formatting.GRAY));
         lines.add(Text.literal("- Infinite Durability").formatted(Formatting.YELLOW));
+        lines.add(Text.literal("- Safe from Piglin attacks").formatted(Formatting.RED));
     }
 
     //HORSE ARMOR
